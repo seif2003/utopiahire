@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { FileText, Code, Upload, Download, Save, Loader2, Eye, RefreshCw } from 'lucide-react'
+import { FileText, Code, Upload, Download, Save, Loader2, Eye, RefreshCw, Sparkles } from 'lucide-react'
 import { createClient } from '@/lib/client'
 import { toast } from 'sonner'
 import dynamic from 'next/dynamic'
@@ -27,6 +27,7 @@ export function ResumeViewer({ userId, resumeUrl, resumeLatex, isResumeLatex }: 
   const [isSaving, setIsSaving] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [isCompiling, setIsCompiling] = useState(false)
+  const [isGenerating, setIsGenerating] = useState(false)
   const [currentResumeUrl, setCurrentResumeUrl] = useState(resumeUrl)
   const [showLatexTab, setShowLatexTab] = useState(isResumeLatex)
   const [pdfKey, setPdfKey] = useState(0) // For forcing iframe reload
@@ -103,46 +104,103 @@ export function ResumeViewer({ userId, resumeUrl, resumeLatex, isResumeLatex }: 
 
     setIsUploading(true)
     try {
-      const supabase = createClient()
+      // Use the upload-resume API route
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('userId', userId)
 
-      // Upload to Supabase Storage
-      const fileName = `${userId}.pdf`
-      const { error: uploadError } = await supabase.storage
-        .from('resumes')
-        .upload(fileName, file, {
-          upsert: true,
-          contentType: 'application/pdf',
-        })
+      const response = await fetch('/api/upload-resume', {
+        method: 'POST',
+        body: formData,
+      })
 
-      if (uploadError) throw uploadError
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to upload resume')
+      }
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('resumes')
-        .getPublicUrl(fileName)
+      const data = await response.json()
 
-      // Update profile with new resume URL and set is_resume_latex to false
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ 
-          resume: publicUrl,
-          is_resume_latex: false 
-        })
-        .eq('id', userId)
-
-      if (updateError) throw updateError
-
-      setCurrentResumeUrl(publicUrl)
-      setShowLatexTab(false)
       toast.success('Resume uploaded successfully!')
       
-      // Reload the page to refresh data
-      window.location.reload()
-    } catch (error) {
+      // Wait a moment for storage to propagate
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      // Fetch the latest resume with timestamp to bypass cache
+      const supabase = createClient()
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('resume, is_resume_latex')
+        .eq('id', userId)
+        .single()
+
+      if (profile?.resume) {
+        // Force complete cache bypass with unique timestamp
+        const timestamp = Date.now()
+        const baseUrl = profile.resume.split('?')[0]
+        const newUrl = `${baseUrl}?v=${timestamp}&nocache=${Math.random()}`
+        setCurrentResumeUrl(newUrl)
+        setPdfKey(prev => prev + 1)
+        setShowLatexTab(profile.is_resume_latex || false)
+      }
+    } catch (error: any) {
       console.error('Error uploading resume:', error)
-      toast.error('Failed to upload resume')
+      toast.error(error.message || 'Failed to upload resume')
     } finally {
       setIsUploading(false)
+    }
+  }
+
+  const handleGenerateWithAI = async () => {
+    setIsGenerating(true)
+    try {
+      const response = await fetch('/api/generate-resume', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: userId,
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to generate resume with AI')
+      }
+
+      const data = await response.json()
+      toast.success('Resume generated successfully with AI!')
+
+      // Wait for storage to propagate
+      await new Promise(resolve => setTimeout(resolve, 2000))
+
+      // Fetch the latest resume
+      const supabase = createClient()
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('resume, resume_latex, is_resume_latex')
+        .eq('id', userId)
+        .single()
+
+      if (profile) {
+        if (profile.resume) {
+          const timestamp = Date.now()
+          const baseUrl = profile.resume.split('?')[0]
+          const newUrl = `${baseUrl}?v=${timestamp}&nocache=${Math.random()}`
+          setCurrentResumeUrl(newUrl)
+          setPdfKey(prev => prev + 1)
+        }
+        if (profile.resume_latex) {
+          setLatexCode(profile.resume_latex)
+        }
+        setShowLatexTab(profile.is_resume_latex || false)
+      }
+    } catch (error: any) {
+      console.error('Error generating resume with AI:', error)
+      toast.error(error.message || 'Failed to generate resume with AI')
+    } finally {
+      setIsGenerating(false)
     }
   }
 
@@ -172,6 +230,25 @@ export function ResumeViewer({ userId, resumeUrl, resumeLatex, isResumeLatex }: 
               Refresh Preview
             </Button>
           )}
+
+          <Button 
+            onClick={handleGenerateWithAI} 
+            variant="default"
+            disabled={isGenerating}
+            className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Sparkles className="mr-2 h-4 w-4" />
+                Generate with AI
+              </>
+            )}
+          </Button>
           
           <label htmlFor="upload-resume">
             <Button variant="outline" disabled={isUploading} asChild>

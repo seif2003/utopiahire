@@ -1,9 +1,20 @@
+import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/server'
+
+// Create a Supabase client with service role key (bypasses RLS)
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
+)
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
     const formData = await request.formData()
     
     const file = formData.get('file') as File
@@ -16,16 +27,51 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Upload file to Supabase Storage
-    const fileExt = file.name.split('.').pop()
-    const fileName = `${userId}-${Date.now()}.${fileExt}`
-    const filePath = `resumes/${fileName}`
+    if (file.type !== 'application/pdf') {
+      return NextResponse.json(
+        { error: 'Only PDF files are allowed' },
+        { status: 400 }
+      )
+    }
 
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    // Delete old resume file if exists
+    try {
+      // Get current resume URL from profile
+      const { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('resume')
+        .eq('id', userId)
+        .single()
+
+      if (profile?.resume) {
+        // Extract filename from URL
+        const oldFileName = profile.resume.split('/').pop()?.split('?')[0]
+        if (oldFileName) {
+          // Delete old file (ignore errors if file doesn't exist)
+          await supabaseAdmin.storage
+            .from('resumes')
+            .remove([oldFileName])
+        }
+      }
+    } catch (error) {
+      console.log('No old resume to delete or error deleting:', error)
+    }
+
+    // Convert File to ArrayBuffer then to Buffer for upload
+    const arrayBuffer = await file.arrayBuffer()
+    const buffer = Buffer.from(arrayBuffer)
+
+    // Use datetime-based filename to avoid caching issues
+    const timestamp = new Date().toISOString()
+    const fileName = `${userId}_${timestamp}.pdf`
+
+    // Upload using service role client (bypasses RLS)
+    const { error: uploadError } = await supabaseAdmin.storage
       .from('resumes')
-      .upload(filePath, file, {
-        contentType: file.type,
-        upsert: false,
+      .upload(fileName, buffer, {
+        contentType: 'application/pdf',
+        cacheControl: 'no-cache, no-store, must-revalidate',
+        upsert: false, // Don't overwrite, create new file
       })
 
     if (uploadError) {
@@ -37,16 +83,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Get public URL
-    const { data: { publicUrl } } = supabase.storage
+    const { data: { publicUrl } } = supabaseAdmin.storage
       .from('resumes')
-      .getPublicUrl(filePath)
+      .getPublicUrl(fileName)
 
-    // Update profile with resume URL
-    const { error: updateError } = await supabase
+    // Update profile with resume URL and set is_resume_latex to false
+    const { error: updateError } = await supabaseAdmin
       .from('profiles')
       .update({ 
         resume: publicUrl,
-        first_login: false 
+        is_resume_latex: false 
       })
       .eq('id', userId)
 
