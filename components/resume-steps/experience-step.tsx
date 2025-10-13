@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChevronRight, Plus, Trash2, Briefcase, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/client'
+import { toast } from 'sonner'
 
 interface Experience {
   id?: string
@@ -34,7 +35,9 @@ export function ExperienceStep({ userId, existingData, onNext }: ExperienceStepP
       ? existingData.map(exp => ({
           ...exp,
           current: !exp.end_date,
-          end_date: exp.end_date || '',
+          // Convert YYYY-MM-DD to YYYY-MM for month input
+          start_date: exp.start_date ? exp.start_date.substring(0, 7) : '',
+          end_date: exp.end_date ? exp.end_date.substring(0, 7) : '',
         }))
       : [{
           title: '',
@@ -99,13 +102,13 @@ export function ExperienceStep({ userId, existingData, onNext }: ExperienceStepP
         
         if (hasAnyField) {
           if (!exp.title || !exp.company || !exp.start_date) {
-            alert(`Experience #${i + 1}: Please complete all required fields (Job Title, Company, Start Date) or remove this entry.`)
+            toast.error(`Experience #${i + 1}: Please complete all required fields (Job Title, Company, Start Date) or remove this entry.`)
             setIsLoading(false)
             return
           }
           
           if (!exp.current && !exp.end_date) {
-            alert(`Experience #${i + 1}: Please provide an End Date or check "I currently work here".`)
+            toast.error(`Experience #${i + 1}: Please provide an End Date or check "I currently work here".`)
             setIsLoading(false)
             return
           }
@@ -118,13 +121,17 @@ export function ExperienceStep({ userId, existingData, onNext }: ExperienceStepP
       const validExperiences = experiences.filter(exp => exp.title && exp.company)
 
       for (const exp of validExperiences) {
+        // Convert YYYY-MM format to YYYY-MM-DD for PostgreSQL DATE type
+        const startDate = exp.start_date ? `${exp.start_date}-01` : null
+        const endDate = exp.current ? null : (exp.end_date ? `${exp.end_date}-01` : null)
+
         const data = {
           user_id: userId,
           title: exp.title,
           company: exp.company,
           location: exp.location,
-          start_date: exp.start_date,
-          end_date: exp.current ? null : exp.end_date || null,
+          start_date: startDate,
+          end_date: endDate,
           description: exp.description,
           proof_link: exp.proof_link,
         }
@@ -139,7 +146,7 @@ export function ExperienceStep({ userId, existingData, onNext }: ExperienceStepP
       onNext()
     } catch (error) {
       console.error('Error saving experiences:', error)
-      alert('Failed to save. Please try again.')
+      toast.error('Failed to save. Please try again.')
     } finally {
       setIsLoading(false)
     }

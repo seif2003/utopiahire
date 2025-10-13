@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChevronRight, Plus, Trash2, Zap, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/client'
+import { toast } from 'sonner'
 
 interface Skill {
   id?: string
@@ -80,7 +81,7 @@ export function SkillsStep({ userId, existingData, onNext }: SkillsStepProps) {
         
         if (hasAnyField) {
           if (!skill.name) {
-            alert(`Skill #${i + 1}: Please provide a skill name or remove this entry.`)
+            toast.error(`Skill #${i + 1}: Please provide a skill name or remove this entry.`)
             setIsLoading(false)
             return
           }
@@ -111,7 +112,7 @@ export function SkillsStep({ userId, existingData, onNext }: SkillsStepProps) {
       onNext()
     } catch (error) {
       console.error('Error saving skills:', error)
-      alert('Failed to save. Please try again.')
+      toast.error('Failed to save. Please try again.')
     } finally {
       setIsLoading(false)
     }

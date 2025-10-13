@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChevronRight, Plus, Trash2, GraduationCap, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/client'
+import { toast } from 'sonner'
 
 interface Education {
   id?: string
@@ -88,13 +89,13 @@ export function EducationStep({ userId, existingData, onNext }: EducationStepPro
         
         if (hasAnyField) {
           if (!edu.institution || !edu.degree || !edu.field_of_study) {
-            alert(`Education #${i + 1}: Please complete all required fields (Institution, Degree, Field of Study) or remove this entry.`)
+            toast.error(`Education #${i + 1}: Please complete all required fields (Institution, Degree, Field of Study) or remove this entry.`)
             setIsLoading(false)
             return
           }
           
           if (!edu.start_year) {
-            alert(`Education #${i + 1}: Please provide a Start Year.`)
+            toast.error(`Education #${i + 1}: Please provide a Start Year.`)
             setIsLoading(false)
             return
           }
@@ -127,7 +128,7 @@ export function EducationStep({ userId, existingData, onNext }: EducationStepPro
       onNext()
     } catch (error) {
       console.error('Error saving education:', error)
-      alert('Failed to save. Please try again.')
+      toast.error('Failed to save. Please try again.')
     } finally {
       setIsLoading(false)
     }

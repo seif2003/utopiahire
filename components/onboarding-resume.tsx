@@ -46,18 +46,10 @@ export function OnboardingResume({ userId }: OnboardingResumeProps) {
     }
   }
 
-  const handleCreateResume = async () => {
-    try {
-      // Mark first login as complete and redirect to resume builder
-      await fetch('/api/complete-onboarding', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, hasResume: false }),
-      })
-      router.push('/main/resume-builder')
-    } catch (error) {
-      console.error('Navigation failed:', error)
-    }
+  const handleCreateResume = () => {
+    // Navigate to resume builder
+    // The complete-onboarding API will be called after user completes all steps
+    router.push('/main/resume-builder')
   }
 
   return (

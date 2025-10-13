@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChevronRight, Plus, Trash2, Folder, Loader2, X } from 'lucide-react'
 import { createClient } from '@/lib/client'
+import { toast } from 'sonner'
 
 interface Project {
   id?: string
@@ -117,7 +118,7 @@ export function ProjectsStep({ userId, existingData, onNext }: ProjectsStepProps
         
         if (hasAnyField) {
           if (!project.title) {
-            alert(`Project #${i + 1}: Please provide a project title or remove this entry.`)
+            toast.error(`Project #${i + 1}: Please provide a project title or remove this entry.`)
             setIsLoading(false)
             return
           }
@@ -149,7 +150,7 @@ export function ProjectsStep({ userId, existingData, onNext }: ProjectsStepProps
       onNext()
     } catch (error) {
       console.error('Error saving projects:', error)
-      alert('Failed to save. Please try again.')
+      toast.error('Failed to save. Please try again.')
     } finally {
       setIsLoading(false)
     }

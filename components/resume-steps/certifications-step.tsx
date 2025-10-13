@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChevronRight, Plus, Trash2, Award, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/client'
+import { toast } from 'sonner'
 
 interface Certification {
   id?: string
@@ -80,13 +81,13 @@ export function CertificationsStep({ userId, existingData, onNext }: Certificati
         
         if (hasAnyField) {
           if (!cert.name || !cert.issuer) {
-            alert(`Certification #${i + 1}: Please provide both Certification Name and Issuing Organization, or remove this entry.`)
+            toast.error(`Certification #${i + 1}: Please provide both Certification Name and Issuing Organization, or remove this entry.`)
             setIsLoading(false)
             return
           }
           
           if (!cert.year) {
-            alert(`Certification #${i + 1}: Please provide the Year Obtained.`)
+            toast.error(`Certification #${i + 1}: Please provide the Year Obtained.`)
             setIsLoading(false)
             return
           }
@@ -116,7 +117,7 @@ export function CertificationsStep({ userId, existingData, onNext }: Certificati
       onNext()
     } catch (error) {
       console.error('Error saving certifications:', error)
-      alert('Failed to save. Please try again.')
+      toast.error('Failed to save. Please try again.')
     } finally {
       setIsLoading(false)
     }

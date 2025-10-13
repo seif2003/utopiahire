@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { FloatingHeader } from "@/components/floating-header";
 import { createClient } from "@/lib/server";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +35,7 @@ export default async function RootLayout({
       >
         <FloatingHeader userEmail={user?.email} />
         {children}
+        <Toaster />
       </body>
     </html>
   );

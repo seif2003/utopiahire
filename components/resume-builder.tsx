@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Check, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { BasicInfoStep } from './resume-steps/basic-info-step'
 import { ExperienceStep } from './resume-steps/experience-step'
 import { EducationStep } from './resume-steps/education-step'
@@ -32,7 +33,6 @@ interface ResumeBuilderProps {
 }
 
 const STEPS = [
-  { id: 'intro', title: 'Introduction', description: 'Let\'s begin!' },
   { id: 'basic', title: 'Basic Info', description: 'Personal details' },
   { id: 'experience', title: 'Experience', description: 'Work history' },
   { id: 'education', title: 'Education', description: 'Academic background' },
@@ -44,6 +44,7 @@ const STEPS = [
 ]
 
 export function ResumeBuilder({ userId, userEmail, existingData }: ResumeBuilderProps) {
+  const [showIntro, setShowIntro] = useState(true)
   const [currentStep, setCurrentStep] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
@@ -69,52 +70,34 @@ export function ResumeBuilder({ userId, userEmail, existingData }: ResumeBuilder
   const handleComplete = async () => {
     setIsLoading(true)
     try {
-      // Mark first login as complete
+      // Mark first login as complete and wait for n8n to generate resume
       const response = await fetch('/api/complete-onboarding', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId }),
       })
 
-      if (response.ok) {
-        router.push('/main')
-        router.refresh()
+      if (!response.ok) {
+        const error = await response.json()
+        console.error('Error completing onboarding:', error)
+        toast.error(error.error || 'Failed to complete profile. Please try again.')
+        setIsLoading(false)
+        return
       }
+
+      // Success - redirect to my-resume page
+      toast.success('Resume generated successfully!')
+      router.push('/main/my-resume')
+      router.refresh()
     } catch (error) {
       console.error('Error completing onboarding:', error)
-    } finally {
+      toast.error('An error occurred. Please try again.')
       setIsLoading(false)
     }
   }
 
   const renderStepContent = () => {
     const step = STEPS[currentStep]
-
-    if (step.id === 'intro') {
-      return (
-        <div className="flex flex-col items-center justify-center py-12 space-y-6">
-          <div className="rounded-full bg-gradient-to-br from-indigo-100 to-blue-100 p-6">
-            <Sparkles className="h-16 w-16 text-indigo-600" />
-          </div>
-          <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
-            Let&apos;s begin by filling out your details!
-          </h2>
-          <p className="text-gray-600 text-center max-w-md">
-            We&apos;ll guide you through each section step by step. You can always come back later to update your information.
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 w-full max-w-2xl">
-            {STEPS.slice(1).map((s, index) => (
-              <div key={s.id} className="flex flex-col items-center p-4 bg-gray-50 rounded-lg">
-                <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-semibold mb-2">
-                  {index + 1}
-                </div>
-                <p className="text-sm font-medium text-center">{s.title}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )
-    }
 
     switch (step.id) {
       case 'basic':
@@ -138,8 +121,73 @@ export function ResumeBuilder({ userId, userEmail, existingData }: ResumeBuilder
     }
   }
 
+  // Show intro screen first
+  if (showIntro) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
+        <Card className="max-w-3xl w-full shadow-2xl">
+          <CardContent className="pt-12 pb-8">
+            <div className="flex flex-col items-center justify-center space-y-6">
+              <div className="rounded-full bg-gradient-to-br from-indigo-100 to-blue-100 p-6">
+                <Sparkles className="h-16 w-16 text-indigo-600" />
+              </div>
+              <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
+                Let&apos;s begin by filling out your details!
+              </h2>
+              <p className="text-gray-600 text-center max-w-md">
+                We&apos;ll guide you through each section step by step. You can always come back later to update your information.
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 w-full max-w-2xl">
+                {STEPS.map((s, index) => (
+                  <div key={s.id} className="flex flex-col items-center p-4 bg-gray-50 rounded-lg">
+                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-semibold mb-2">
+                      {index + 1}
+                    </div>
+                    <p className="text-sm font-medium text-center">{s.title}</p>
+                  </div>
+                ))}
+              </div>
+              <Button
+                onClick={() => setShowIntro(false)}
+                size="lg"
+                className="mt-8 bg-indigo-600 hover:bg-indigo-700 px-12"
+              >
+                Start Building
+                <ChevronRight className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <Card className="max-w-md w-full mx-4">
+            <CardContent className="pt-6">
+              <div className="flex flex-col items-center space-y-4">
+                <div className="relative">
+                  <div className="w-16 h-16 border-4 border-indigo-200 rounded-full"></div>
+                  <div className="absolute top-0 left-0 w-16 h-16 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin"></div>
+                </div>
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Generating Your Resume
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Please wait while we process your information...
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       <div className="max-w-4xl mx-auto">
         {/* Progress Bar */}
         <div className="mb-8">
@@ -203,34 +251,6 @@ export function ResumeBuilder({ userId, userEmail, existingData }: ResumeBuilder
           </CardHeader>
           <CardContent>
             {renderStepContent()}
-
-            {/* Navigation Buttons (only shown for intro step) */}
-            {STEPS[currentStep].id === 'intro' && (
-              <div className="flex justify-between mt-8 pt-6 border-t">
-                <Button
-                  onClick={handleBack}
-                  variant="outline"
-                  disabled={currentStep === 0}
-                >
-                  <ChevronLeft className="mr-2 h-4 w-4" />
-                  Back
-                </Button>
-                <Button
-                  onClick={handleNext}
-                  disabled={isLoading}
-                  className="bg-indigo-600 hover:bg-indigo-700"
-                >
-                  {currentStep === STEPS.length - 1 ? (
-                    isLoading ? 'Completing...' : 'Complete'
-                  ) : (
-                    <>
-                      Next
-                      <ChevronRight className="ml-2 h-4 w-4" />
-                    </>
-                  )}
-                </Button>
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>

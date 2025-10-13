@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChevronRight, Plus, Trash2, Globe, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/client'
+import { toast } from 'sonner'
 
 interface Language {
   id?: string
@@ -69,7 +70,7 @@ export function LanguagesStep({ userId, existingData, onNext }: LanguagesStepPro
         const lang = languages[i]
         // Since proficiency has a default value, we only need to check if language is filled
         if (!lang.language && lang.proficiency) {
-          alert(`Language #${i + 1}: Please provide a language name or remove this entry.`)
+          toast.error(`Language #${i + 1}: Please provide a language name or remove this entry.`)
           setIsLoading(false)
           return
         }
@@ -96,7 +97,7 @@ export function LanguagesStep({ userId, existingData, onNext }: LanguagesStepPro
       onNext()
     } catch (error) {
       console.error('Error saving languages:', error)
-      alert('Failed to save. Please try again.')
+      toast.error('Failed to save. Please try again.')
     } finally {
       setIsLoading(false)
     }

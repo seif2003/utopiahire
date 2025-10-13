@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ChevronRight, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/client'
+import { toast } from 'sonner'
 
 interface BasicInfoStepProps {
   userId: string
@@ -48,7 +49,7 @@ export function BasicInfoStep({ userId, userEmail, existingData, onNext }: Basic
       onNext()
     } catch (error) {
       console.error('Error saving basic info:', error)
-      alert('Failed to save. Please try again.')
+      toast.error('Failed to save. Please try again.')
     } finally {
       setIsLoading(false)
     }

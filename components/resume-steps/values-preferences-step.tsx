@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 import { ChevronRight, Plus, X, Heart, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/client'
+import { toast } from 'sonner'
 
 interface ValuesPreferences {
   id?: string
@@ -111,7 +112,7 @@ export function ValuesPreferencesStep({ userId, existingData, onNext }: ValuesPr
       onNext()
     } catch (error) {
       console.error('Error saving values and preferences:', error)
-      alert('Failed to save. Please try again.')
+      toast.error('Failed to save. Please try again.')
     } finally {
       setIsLoading(false)
     }
