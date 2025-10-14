@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Grid2x2PlusIcon, MenuIcon, LogOut } from 'lucide-react';
+import { Briefcase, MenuIcon, LogOut } from 'lucide-react';
 import { Sheet, SheetContent, SheetFooter } from '@/components/sheet';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -36,16 +36,16 @@ export function FloatingHeader({ userEmail }: FloatingHeaderProps) {
 
 	const links = [
 		{
-			label: 'Home',
+			label: 'Job Offers',
 			href: '/main',
 		},
 		{
-			label: 'Pricing',
-			href: '#',
+			label: 'My Resume',
+			href: '/main/my-resume',
 		},
 		{
-			label: 'About',
-			href: '#',
+			label: 'Edit Profile',
+			href: '/main/edit-profile',
 		},
 	];
 
@@ -56,7 +56,7 @@ export function FloatingHeader({ userEmail }: FloatingHeaderProps) {
 	const handleLogout = async () => {
 		try {
 			await fetch('/auth/logout', { method: 'POST' });
-			router.push('/auth/login');
+			router.push('/');
 			router.refresh();
 		} catch (error) {
 			console.error('Logout failed:', error);
@@ -74,7 +74,7 @@ export function FloatingHeader({ userEmail }: FloatingHeaderProps) {
 			<nav className="mx-auto flex items-center justify-between p-1.5">
 				<a href="/" >
 				<div className="hover:bg-accent flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 duration-100">
-					<Grid2x2PlusIcon className="size-5" />
+					<Briefcase className="size-5" />
 					<p className="font-mono text-base font-bold">Utopia Hire</p>
 				</div>
 				</a>

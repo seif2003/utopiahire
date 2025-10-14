@@ -124,7 +124,7 @@ export function ResumeBuilder({ userId, userEmail, existingData }: ResumeBuilder
   // Show intro screen first
   if (showIntro) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
+      <div className="min-h-screen flex items-center justify-center px-4">
         <Card className="max-w-3xl w-full shadow-2xl">
           <CardContent className="pt-12 pb-8">
             <div className="flex flex-col items-center justify-center space-y-6">
@@ -163,7 +163,7 @@ export function ResumeBuilder({ userId, userEmail, existingData }: ResumeBuilder
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4">
+    <div className="min-h-screen py-8 px-4">
       {/* Loading Overlay */}
       {isLoading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
