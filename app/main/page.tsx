@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation'
 
 import { createClient } from '@/lib/server'
 import { OnboardingFlow } from '@/components/onboarding-flow'
+import { MainContent } from '@/components/main-content'
+
 
 
 export default async function ProtectedPage() {
@@ -32,11 +34,5 @@ export default async function ProtectedPage() {
     return <OnboardingFlow userId={user.id} />
   }
 
-  return (
-    <div className="flex h-svh w-full items-center justify-center gap-2">
-      <p className="text-2xl">
-        Welcome back to Utopia Hire!
-      </p>
-    </div>
-  )
+  return <MainContent />
 }

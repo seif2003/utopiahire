@@ -40,6 +40,10 @@ export function FloatingHeader({ userEmail }: FloatingHeaderProps) {
 			href: '/main',
 		},
 		{
+			label: 'My Jobs',
+			href: '/main/my-jobs',
+		},
+		{
 			label: 'My Resume',
 			href: '/main/my-resume',
 		},
