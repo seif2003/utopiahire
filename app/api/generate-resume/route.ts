@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Send webhook request to n8n to create resume
-    const webhookResponse = await fetch('https://n8n.benamara.tn/webhook-test/autopiahire/create-resume', {
+    const webhookResponse = await fetch('https://n8n.benamara.tn/webhook/autopiahire/create-resume', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

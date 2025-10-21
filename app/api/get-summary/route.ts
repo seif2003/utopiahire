@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Call n8n webhook with user_id
-    const n8nUrl = `https://n8n.benamara.tn/webhook-test/autopiahire/summarize?user_id=${user.id}`
+    const n8nUrl = `https://n8n.benamara.tn/webhook/autopiahire/summarize?user_id=${user.id}`
     
     const response = await fetch(n8nUrl, {
       method: 'GET',

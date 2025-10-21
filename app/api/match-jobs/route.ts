@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Call n8n webhook
-    const n8nUrl = 'https://n8n.benamara.tn/webhook-test/autopiahire/get-jobs'
+    const n8nUrl = 'https://n8n.benamara.tn/webhook/autopiahire/get-jobs'
     
     const url = new URL(n8nUrl)
     url.searchParams.set('page', String(page))

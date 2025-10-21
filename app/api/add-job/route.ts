@@ -89,7 +89,7 @@ export async function POST(request: Request) {
 
     // Notify external webhook with the created job ID (best-effort)
     try {
-      const webhookUrl = process.env.N8N_WEBHOOK_URL || 'https://n8n.benamara.tn/webhook-test/autopiahire/add-job';
+      const webhookUrl = process.env.N8N_WEBHOOK_URL || 'https://n8n.benamara.tn/webhook/autopiahire/add-job';
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 2000); // 2s timeout
 

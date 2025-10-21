@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     console.log('LaTeX code length:', latex_code.length)
     
     const webhookResponse = await fetch(
-      process.env.N8N_COMPILE_LATEX_URL || 'https://n8n.benamara.tn/webhook-test/autopiahire/compile-latex',
+      process.env.N8N_COMPILE_LATEX_URL || 'https://n8n.benamara.tn/webhook/autopiahire/compile-latex',
       {
         method: 'POST',
         headers: {
