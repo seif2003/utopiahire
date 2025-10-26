@@ -3,7 +3,7 @@ import { createClient } from '@/lib/server'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient()
@@ -18,11 +18,13 @@ export async function GET(
       )
     }
 
+    const { id } = await params
+
     // Fetch job from database
     const { data: job, error: jobError } = await supabase
       .from('job_offers')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
 
     if (jobError) {
@@ -37,7 +39,7 @@ export async function GET(
     await supabase
       .from('job_offers')
       .update({ views_count: (job.views_count || 0) + 1 })
-      .eq('id', params.id)
+      .eq('id', id)
 
     return NextResponse.json(job)
   } catch (error) {
@@ -51,7 +53,7 @@ export async function GET(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient()
@@ -66,11 +68,13 @@ export async function DELETE(
       )
     }
 
+    const { id } = await params
+
     // Delete job from database (RLS will ensure user can only delete their own jobs)
     const { error: deleteError } = await supabase
       .from('job_offers')
       .delete()
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('posted_by', user.id)
 
     if (deleteError) {

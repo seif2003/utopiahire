@@ -116,7 +116,7 @@ export function LanguagesStep({ userId, existingData, onNext }: LanguagesStepPro
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg flex items-center">
-                <Globe className="h-5 w-5 mr-2 text-indigo-600" />
+                <Globe className="h-5 w-5 mr-2 " />
                 Language #{index + 1}
               </CardTitle>
               {languages.length > 1 && (
@@ -175,7 +175,7 @@ export function LanguagesStep({ userId, existingData, onNext }: LanguagesStepPro
         <Button
           type="submit"
           disabled={isLoading}
-          className="bg-indigo-600 hover:bg-indigo-700"
+          
         >
           {isLoading ? (
             <>

@@ -194,7 +194,7 @@ export function ProfileEditor({ userId, userEmail, existingData }: ProfileEditor
                 <TabsTrigger
                   key={tab.id}
                   value={tab.id}
-                  className="flex flex-col items-center gap-1 p-3 data-[state=active]:bg-indigo-50 data-[state=active]:text-indigo-600"
+                  className="flex flex-col items-center gap-1 p-3 data-[state=active]:bg-indigo-50 data-[state=active]:"
                 >
                   <Icon className="h-5 w-5" />
                   <span className="text-xs font-medium">{tab.title}</span>
@@ -210,7 +210,7 @@ export function ProfileEditor({ userId, userEmail, existingData }: ProfileEditor
                   <CardTitle className="flex items-center gap-2">
                     {(() => {
                       const Icon = tab.icon
-                      return <Icon className="h-6 w-6 text-indigo-600" />
+                      return <Icon className="h-6 w-6 " />
                     })()}
                     {tab.title}
                   </CardTitle>

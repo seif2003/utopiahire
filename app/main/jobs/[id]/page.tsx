@@ -3,7 +3,7 @@ import { createClient } from '@/lib/server'
 import { JobDetails } from '@/components/job-details'
 
 
-export default async function JobPage({ params }: { params: { id: string } }) {
+export default async function JobPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
 
   const { data, error } = await supabase.auth.getClaims()
@@ -11,5 +11,7 @@ export default async function JobPage({ params }: { params: { id: string } }) {
     redirect('/auth/login')
   }
 
-  return <JobDetails jobId={params.id} />
+  const { id } = await params
+
+  return <JobDetails jobId={id} />
 }

@@ -128,10 +128,10 @@ export function ResumeBuilder({ userId, userEmail, existingData }: ResumeBuilder
         <Card className="max-w-3xl w-full shadow-2xl">
           <CardContent className="pt-12 pb-8">
             <div className="flex flex-col items-center justify-center space-y-6">
-              <div className="rounded-full bg-gradient-to-br from-indigo-100 to-blue-100 p-6">
-                <Sparkles className="h-16 w-16 text-indigo-600" />
+              <div className="rounded-full bg-gradient-to-br from-gray-100 to-gray-300 p-6">
+                <Sparkles className="h-16 w-16 " />
               </div>
-              <h2 className="text-3xl font-bold text-center bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
+              <h2 className="text-3xl font-bold text-center bg-gradient-to-r bg-clip-text text-transparent">
                 Let&apos;s begin by filling out your details!
               </h2>
               <p className="text-gray-600 text-center max-w-md">
@@ -140,7 +140,7 @@ export function ResumeBuilder({ userId, userEmail, existingData }: ResumeBuilder
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 w-full max-w-2xl">
                 {STEPS.map((s, index) => (
                   <div key={s.id} className="flex flex-col items-center p-4 bg-gray-50 rounded-lg">
-                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-semibold mb-2">
+                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center  font-semibold mb-2">
                       {index + 1}
                     </div>
                     <p className="text-sm font-medium text-center">{s.title}</p>
@@ -150,7 +150,7 @@ export function ResumeBuilder({ userId, userEmail, existingData }: ResumeBuilder
               <Button
                 onClick={() => setShowIntro(false)}
                 size="lg"
-                className="mt-8 bg-indigo-600 hover:bg-indigo-700 px-12"
+                className="mt-8 px-12"
               >
                 Start Building
                 <ChevronRight className="ml-2 h-5 w-5" />
@@ -172,7 +172,7 @@ export function ResumeBuilder({ userId, userEmail, existingData }: ResumeBuilder
               <div className="flex flex-col items-center space-y-4">
                 <div className="relative">
                   <div className="w-16 h-16 border-4 border-indigo-200 rounded-full"></div>
-                  <div className="absolute top-0 left-0 w-16 h-16 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin"></div>
+                  <div className="absolute top-0 left-0 w-16 h-16 border-4 border-black rounded-full border-t-transparent animate-spin"></div>
                 </div>
                 <div className="text-center">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -213,7 +213,7 @@ export function ResumeBuilder({ userId, userEmail, existingData }: ResumeBuilder
                       index < currentStep
                         ? 'bg-green-500 text-white'
                         : index === currentStep
-                        ? 'bg-indigo-600 text-white ring-4 ring-indigo-200'
+                        ? 'bg-black text-white ring-4 ring-gray-200'
                         : 'bg-gray-200 text-gray-500'
                     }`}
                   >

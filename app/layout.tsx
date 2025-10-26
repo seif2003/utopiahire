@@ -27,13 +27,25 @@ export default async function RootLayout({
 }>) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  
+  // Fetch user profile picture if user is authenticated
+  let profilePicture = null;
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('profile_picture')
+      .eq('id', user.id)
+      .single();
+    
+    profilePicture = profile?.profile_picture;
+  }
 
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <FloatingHeader userEmail={user?.email} />
+        <FloatingHeader userEmail={user?.email} profilePicture={profilePicture} />
         {children}
         <Toaster />
       </body>

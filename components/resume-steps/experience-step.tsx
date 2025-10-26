@@ -121,9 +121,9 @@ export function ExperienceStep({ userId, existingData, onNext }: ExperienceStepP
       const validExperiences = experiences.filter(exp => exp.title && exp.company)
 
       for (const exp of validExperiences) {
-        // Convert YYYY-MM format to YYYY-MM-DD for PostgreSQL DATE type
-        const startDate = exp.start_date ? `${exp.start_date}-01` : null
-        const endDate = exp.current ? null : (exp.end_date ? `${exp.end_date}-01` : null)
+        // Store dates as text in YYYY-MM format (or as-is if already provided)
+        const startDate = exp.start_date || null
+        const endDate = exp.current ? null : (exp.end_date || null)
 
         const data = {
           user_id: userId,
@@ -165,7 +165,7 @@ export function ExperienceStep({ userId, existingData, onNext }: ExperienceStepP
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg flex items-center">
-                <Briefcase className="h-5 w-5 mr-2 text-indigo-600" />
+                <Briefcase className="h-5 w-5 mr-2 " />
                 Experience #{index + 1}
               </CardTitle>
               {experiences.length > 1 && (
@@ -278,7 +278,7 @@ export function ExperienceStep({ userId, existingData, onNext }: ExperienceStepP
         <Button
           type="submit"
           disabled={isLoading}
-          className="bg-indigo-600 hover:bg-indigo-700"
+          
         >
           {isLoading ? (
             <>

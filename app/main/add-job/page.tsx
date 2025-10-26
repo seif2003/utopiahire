@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useRef, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,14 +9,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import Image from 'next/image';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, ArrowLeft } from 'lucide-react';
 
 export default function AddJobPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const organizationId = searchParams.get('org');
+  
   const [isLoading, setIsLoading] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [logoPath, setLogoPath] = useState<string | null>(null);
+  const [organizationName, setOrganizationName] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Dynamic arrays
@@ -69,6 +73,43 @@ export default function AddJobPage() {
     // Status
     status: 'draft',
   });
+
+  // Fetch organization data if org parameter is present
+  useEffect(() => {
+    if (organizationId) {
+      fetchOrganizationData()
+    }
+  }, [organizationId])
+
+  const fetchOrganizationData = async () => {
+    try {
+      const response = await fetch(`/api/organizations/${organizationId}`)
+      
+      if (!response.ok) {
+        toast.error('Failed to load organization')
+        return
+      }
+
+      const org = await response.json()
+      setOrganizationName(org.name)
+      
+      // Pre-fill company information from organization
+      setFormData(prev => ({
+        ...prev,
+        company_name: org.name || '',
+        company_logo: org.logo_url || '',
+        company_website: org.website || '',
+        company_description: org.description || '',
+      }))
+
+      if (org.logo_url) {
+        setLogoPreview(org.logo_url)
+      }
+    } catch (error) {
+      console.error('Error fetching organization:', error)
+      toast.error('Failed to load organization data')
+    }
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -173,6 +214,7 @@ export default function AddJobPage() {
       // Prepare data
       const jobData = {
         ...formData,
+        organization_id: organizationId || null, // Include organization ID
         responsibilities: responsibilities.filter((r) => r.trim() !== ''),
         required_skills: requiredSkills.filter((s) => s.trim() !== ''),
         preferred_skills: preferredSkills.filter((s) => s.trim() !== ''),
@@ -210,7 +252,13 @@ export default function AddJobPage() {
           ? 'Job offer published successfully!'
           : 'Job offer saved as draft!'
       );
-      router.push('/main/my-jobs');
+      
+      // Redirect back to organization jobs if org parameter is present
+      if (organizationId) {
+        router.push(`/main/my-jobs/${organizationId}`)
+      } else {
+        router.push('/main/my-jobs')
+      }
     } catch (error) {
       console.error('Error creating job offer:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to create job offer');
@@ -221,10 +269,23 @@ export default function AddJobPage() {
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-4xl">
+      {organizationId && (
+        <Button 
+          variant="ghost" 
+          onClick={() => router.push(`/main/my-jobs/${organizationId}`)}
+          className="mb-4"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to {organizationName || 'Organization'}
+        </Button>
+      )}
+      
       <div className="mb-6">
         <h1 className="text-3xl font-bold">Post a New Job</h1>
         <p className="text-muted-foreground mt-2">
-          Fill in the details to create a new job posting
+          {organizationId 
+            ? `Create a job posting for ${organizationName || 'your organization'}` 
+            : 'Fill in the details to create a new job posting'}
         </p>
       </div>
 
@@ -233,7 +294,11 @@ export default function AddJobPage() {
         <Card>
           <CardHeader>
             <CardTitle>Company Information</CardTitle>
-            <CardDescription>Tell candidates about your company</CardDescription>
+            <CardDescription>
+              {organizationId 
+                ? 'Company information is pre-filled from your organization' 
+                : 'Tell candidates about your company'}
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
@@ -243,6 +308,7 @@ export default function AddJobPage() {
                 name="company_name"
                 value={formData.company_name}
                 onChange={handleChange}
+                disabled={!!organizationId} // Disable if organization is set
                 required
               />
             </div>

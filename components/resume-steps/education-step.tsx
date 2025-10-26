@@ -147,7 +147,7 @@ export function EducationStep({ userId, existingData, onNext }: EducationStepPro
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg flex items-center">
-                <GraduationCap className="h-5 w-5 mr-2 text-indigo-600" />
+                <GraduationCap className="h-5 w-5 mr-2 " />
                 Education #{index + 1}
               </CardTitle>
               {education.length > 1 && (
@@ -244,7 +244,7 @@ export function EducationStep({ userId, existingData, onNext }: EducationStepPro
         <Button
           type="submit"
           disabled={isLoading}
-          className="bg-indigo-600 hover:bg-indigo-700"
+          
         >
           {isLoading ? (
             <>

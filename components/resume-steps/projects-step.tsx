@@ -169,7 +169,7 @@ export function ProjectsStep({ userId, existingData, onNext }: ProjectsStepProps
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg flex items-center">
-                <Folder className="h-5 w-5 mr-2 text-indigo-600" />
+                <Folder className="h-5 w-5 mr-2 " />
                 Project #{index + 1}
               </CardTitle>
               {projects.length > 1 && (
@@ -236,7 +236,7 @@ export function ProjectsStep({ userId, existingData, onNext }: ProjectsStepProps
                 {project.tech_stack.map((tech, techIndex) => (
                   <span
                     key={techIndex}
-                    className="inline-flex items-center gap-1 px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm"
+                    className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-indigo-700 rounded-full text-sm"
                   >
                     {tech}
                     <button
@@ -275,7 +275,7 @@ export function ProjectsStep({ userId, existingData, onNext }: ProjectsStepProps
                     key={linkIndex}
                     className="flex items-center justify-between p-2 bg-gray-50 rounded text-sm"
                   >
-                    <a href={link} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline truncate">
+                    <a href={link} target="_blank" rel="noopener noreferrer" className=" hover:underline truncate">
                       {link}
                     </a>
                     <button
@@ -317,7 +317,7 @@ export function ProjectsStep({ userId, existingData, onNext }: ProjectsStepProps
         <Button
           type="submit"
           disabled={isLoading}
-          className="bg-indigo-600 hover:bg-indigo-700"
+          
         >
           {isLoading ? (
             <>

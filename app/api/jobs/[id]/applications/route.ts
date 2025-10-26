@@ -3,7 +3,7 @@ import { createClient } from '@/lib/server'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient()
@@ -18,11 +18,13 @@ export async function GET(
       )
     }
 
+    const { id } = await params
+
     // First check if the user owns this job
     const { data: job, error: jobError } = await supabase
       .from('job_offers')
       .select('posted_by')
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
 
     if (jobError || !job) {
@@ -47,12 +49,16 @@ export async function GET(
         profiles:user_id (
           full_name,
           email,
-          avatar_url,
           phone,
-          location
+          location,
+          profile_picture,
+          headline,
+          bio,
+          work_preference,
+          resume
         )
       `)
-      .eq('job_id', params.id)
+      .eq('job_id', id)
       .order('applied_at', { ascending: false })
 
     if (appsError) {
@@ -63,7 +69,42 @@ export async function GET(
       )
     }
 
-    return NextResponse.json(applications || [])
+    // Fetch additional data for each application
+    const applicationsWithDetails = await Promise.all(
+      (applications || []).map(async (app) => {
+        // Get experiences
+        const { data: experiences } = await supabase
+          .from('experiences')
+          .select('*')
+          .eq('user_id', app.user_id)
+          .order('start_date', { ascending: false })
+          .limit(3)
+
+        // Get education
+        const { data: education } = await supabase
+          .from('education')
+          .select('*')
+          .eq('user_id', app.user_id)
+          .order('start_date', { ascending: false })
+          .limit(2)
+
+        // Get skills
+        const { data: skills } = await supabase
+          .from('skills')
+          .select('*')
+          .eq('user_id', app.user_id)
+          .limit(10)
+
+        return {
+          ...app,
+          experiences: experiences || [],
+          education: education || [],
+          skills: skills || []
+        }
+      })
+    )
+
+    return NextResponse.json(applicationsWithDetails)
   } catch (error) {
     console.error('Error fetching applications:', error)
     return NextResponse.json(

@@ -121,7 +121,7 @@ export function ValuesPreferencesStep({ userId, existingData, onNext }: ValuesPr
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="flex items-center gap-2 mb-4">
-        <Heart className="h-6 w-6 text-indigo-600" />
+        <Heart className="h-6 w-6 " />
         <p className="text-sm text-gray-600">
           Tell us about your values and work preferences (optional)
         </p>
@@ -153,7 +153,7 @@ export function ValuesPreferencesStep({ userId, existingData, onNext }: ValuesPr
               {values.core_values.map((value, index) => (
                 <span
                   key={index}
-                  className="inline-flex items-center gap-1 px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm"
+                  className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-indigo-700 rounded-full text-sm"
                 >
                   {value}
                   <button
@@ -253,7 +253,7 @@ export function ValuesPreferencesStep({ userId, existingData, onNext }: ValuesPr
               id="relocation"
               checked={values.open_to_relocation}
               onChange={(e) => setValues({ ...values, open_to_relocation: e.target.checked })}
-              className="w-5 h-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+              className="w-5 h-5 rounded border-gray-300  focus:ring-indigo-500"
             />
             <label htmlFor="relocation" className="text-sm font-medium cursor-pointer">
               I am open to relocation for the right opportunity
@@ -266,7 +266,7 @@ export function ValuesPreferencesStep({ userId, existingData, onNext }: ValuesPr
         <Button
           type="submit"
           disabled={isLoading}
-          className="bg-indigo-600 hover:bg-indigo-700"
+          
         >
           {isLoading ? (
             <>

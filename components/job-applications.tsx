@@ -4,8 +4,32 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loader2, ArrowLeft, Mail, FileText, Calendar, User } from 'lucide-react'
+import { Loader2, ArrowLeft, Mail, FileText, Calendar, User, Briefcase, GraduationCap, Award } from 'lucide-react'
 import { toast } from 'sonner'
+import Image from 'next/image'
+
+interface Experience {
+  id: string
+  title: string
+  company: string
+  start_date: string
+  end_date: string | null
+}
+
+interface Education {
+  id: string
+  institution: string
+  degree: string
+  field_of_study: string
+  start_year: number
+  end_year: number | null
+}
+
+interface Skill {
+  id: string
+  name: string
+  level: string
+}
 
 interface Application {
   id: string
@@ -17,10 +41,17 @@ interface Application {
   profiles: {
     full_name: string
     email: string
-    avatar_url: string | null
     phone: string | null
     location: string | null
+    profile_picture: string | null
+    headline: string | null
+    bio: string | null
+    work_preference: string | null
+    resume: string | null
   }
+  experiences: Experience[]
+  education: Education[]
+  skills: Skill[]
 }
 
 interface Job {
@@ -40,6 +71,7 @@ export function JobApplications({ jobId, userId }: JobApplicationsProps) {
   const [job, setJob] = useState<Job | null>(null)
   const [applications, setApplications] = useState<Application[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null)
 
   useEffect(() => {
     fetchJobAndApplications()
@@ -96,6 +128,36 @@ export function JobApplications({ jobId, userId }: JobApplicationsProps) {
     }
   }
 
+  const handleStatusChange = async (applicationId: string, newStatus: string) => {
+    setUpdatingStatus(applicationId)
+    try {
+      const response = await fetch(`/api/applications/${applicationId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to update status')
+      }
+
+      // Update local state
+      setApplications(applications.map(app =>
+        app.id === applicationId ? { ...app, status: newStatus } : app
+      ))
+
+      toast.success('Application status updated')
+    } catch (error) {
+      console.error('Error updating status:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to update status')
+    } finally {
+      setUpdatingStatus(null)
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="container mx-auto py-8 px-4">
@@ -145,12 +207,28 @@ export function JobApplications({ jobId, userId }: JobApplicationsProps) {
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                      <User className="w-6 h-6 text-primary" />
-                    </div>
-                    <div>
+                    {application.profiles.profile_picture ? (
+                      <div className="relative w-16 h-16 rounded-full overflow-hidden">
+                        <Image
+                          src={application.profiles.profile_picture}
+                          alt={application.profiles.full_name}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                        <User className="w-8 h-8 text-primary" />
+                      </div>
+                    )}
+                    <div className="flex-1">
                       <CardTitle>{application.profiles.full_name}</CardTitle>
-                      <CardDescription className="flex flex-col gap-1 mt-1">
+                      {application.profiles.headline && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {application.profiles.headline}
+                        </p>
+                      )}
+                      <CardDescription className="flex flex-col gap-1 mt-2">
                         <span className="flex items-center gap-1">
                           <Mail className="w-3 h-3" />
                           {application.profiles.email}
@@ -165,9 +243,18 @@ export function JobApplications({ jobId, userId }: JobApplicationsProps) {
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-2">
-                    <span className={`px-3 py-1 text-xs rounded-full capitalize ${getStatusColor(application.status)}`}>
-                      {application.status}
-                    </span>
+                    <select
+                      value={application.status}
+                      onChange={(e) => handleStatusChange(application.id, e.target.value)}
+                      disabled={updatingStatus === application.id}
+                      className={`px-3 py-1 text-xs rounded-full capitalize border-0 font-medium cursor-pointer ${getStatusColor(application.status)}`}
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="reviewing">Reviewing</option>
+                      <option value="interview">Interview</option>
+                      <option value="accepted">Accepted</option>
+                      <option value="rejected">Rejected</option>
+                    </select>
                     <span className="text-xs text-muted-foreground flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       {new Date(application.applied_at).toLocaleDateString()}
@@ -175,21 +262,96 @@ export function JobApplications({ jobId, userId }: JobApplicationsProps) {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-6">
+                {/* Bio */}
+                {application.profiles.bio && (
+                  <div>
+                    <h4 className="font-semibold mb-2">About</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {application.profiles.bio}
+                    </p>
+                  </div>
+                )}
+
+                {/* Experience */}
+                {application.experiences && application.experiences.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold mb-3 flex items-center gap-2">
+                      <Briefcase className="w-4 h-4" />
+                      Experience
+                    </h4>
+                    <div className="space-y-3">
+                      {application.experiences.map((exp) => (
+                        <div key={exp.id} className="text-sm">
+                          <p className="font-medium">{exp.title}</p>
+                          <p className="text-muted-foreground">{exp.company}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {exp.start_date} - {exp.end_date || 'Present'}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Education */}
+                {application.education && application.education.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold mb-3 flex items-center gap-2">
+                      <GraduationCap className="w-4 h-4" />
+                      Education
+                    </h4>
+                    <div className="space-y-3">
+                      {application.education.map((edu) => (
+                        <div key={edu.id} className="text-sm">
+                          <p className="font-medium">{edu.degree} in {edu.field_of_study}</p>
+                          <p className="text-muted-foreground">{edu.institution}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {edu.start_year} - {edu.end_year || 'Present'}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Skills */}
+                {application.skills && application.skills.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold mb-3 flex items-center gap-2">
+                      <Award className="w-4 h-4" />
+                      Skills
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {application.skills.map((skill) => (
+                        <span 
+                          key={skill.id}
+                          className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary"
+                        >
+                          {skill.name} • {skill.level}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Cover Letter */}
                 {application.cover_letter && (
-                  <div className="mb-4">
+                  <div>
                     <h4 className="font-semibold mb-2">Cover Letter</h4>
                     <p className="text-sm text-muted-foreground whitespace-pre-line">
                       {application.cover_letter}
                     </p>
                   </div>
                 )}
-                <div className="flex gap-2">
-                  {application.resume_url && (
+
+                {/* Actions */}
+                <div className="flex gap-2 pt-4 border-t">
+                  {(application.resume_url || application.profiles.resume) && (
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.open(application.resume_url!, '_blank')}
+                      onClick={() => window.open(application.resume_url || application.profiles.resume!, '_blank')}
                     >
                       <FileText className="w-4 h-4 mr-2" />
                       View Resume

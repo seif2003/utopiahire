@@ -95,7 +95,7 @@ export default function UploadTestPage() {
                 href={uploadedUrl} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-blue-600 hover:underline break-all"
+                className="hover:underline break-all"
               >
                 {uploadedUrl}
               </a>

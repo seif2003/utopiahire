@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/server'
-import { MyJobsContent } from '@/components/my-jobs-content'
+import { OrganizationManager } from '@/components/organization-manager'
 
 
 export default async function MyJobsPage() {
@@ -17,5 +17,5 @@ export default async function MyJobsPage() {
     redirect('/auth/login')
   }
 
-  return <MyJobsContent userId={user.id} />
+  return <OrganizationManager userId={user.id} />
 }

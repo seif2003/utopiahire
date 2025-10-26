@@ -136,7 +136,7 @@ export function CertificationsStep({ userId, existingData, onNext }: Certificati
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg flex items-center">
-                <Award className="h-5 w-5 mr-2 text-indigo-600" />
+                <Award className="h-5 w-5 mr-2 " />
                 Certification #{index + 1}
               </CardTitle>
               {certifications.length > 1 && (
@@ -211,7 +211,6 @@ export function CertificationsStep({ userId, existingData, onNext }: Certificati
         <Button
           type="submit"
           disabled={isLoading}
-          className="bg-indigo-600 hover:bg-indigo-700"
         >
           {isLoading ? (
             <>

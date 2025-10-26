@@ -235,7 +235,6 @@ export function ResumeViewer({ userId, resumeUrl, resumeLatex, isResumeLatex }: 
             onClick={handleGenerateWithAI} 
             variant="default"
             disabled={isGenerating}
-            className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
           >
             {isGenerating ? (
               <>
@@ -295,7 +294,7 @@ export function ResumeViewer({ userId, resumeUrl, resumeLatex, isResumeLatex }: 
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
-                    <FileText className="mr-2 h-5 w-5 text-indigo-600" />
+                    <FileText className="mr-2 h-5 w-5 " />
                     Resume Preview
                   </CardTitle>
                 </CardHeader>
@@ -319,7 +318,7 @@ export function ResumeViewer({ userId, resumeUrl, resumeLatex, isResumeLatex }: 
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
                       <span className="flex items-center">
-                        <Code className="mr-2 h-5 w-5 text-indigo-600" />
+                        <Code className="mr-2 h-5 w-5 " />
                         LaTeX Editor
                       </span>
                       <div className="flex gap-2">
@@ -371,7 +370,7 @@ export function ResumeViewer({ userId, resumeUrl, resumeLatex, isResumeLatex }: 
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center">
-                      <FileText className="mr-2 h-5 w-5 text-indigo-600" />
+                      <FileText className="mr-2 h-5 w-5 " />
                       PDF Preview
                     </CardTitle>
                   </CardHeader>
@@ -397,7 +396,7 @@ export function ResumeViewer({ userId, resumeUrl, resumeLatex, isResumeLatex }: 
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
-                <FileText className="mr-2 h-5 w-5 text-indigo-600" />
+                <FileText className="mr-2 h-5 w-5 " />
                 Resume Preview
               </CardTitle>
             </CardHeader>

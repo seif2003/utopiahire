@@ -20,9 +20,41 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
+    // If organization_id is provided, verify ownership
+    if (body.organization_id) {
+      const { data: organization, error: orgError } = await supabase
+        .from('organizations')
+        .select('owner_id, name, logo_url, website, description')
+        .eq('id', body.organization_id)
+        .single();
+
+      if (orgError || !organization) {
+        return NextResponse.json(
+          { error: 'Organization not found' },
+          { status: 404 }
+        );
+      }
+
+      if (organization.owner_id !== user.id) {
+        return NextResponse.json(
+          { error: 'You do not have permission to post jobs for this organization' },
+          { status: 403 }
+        );
+      }
+
+      // Use organization details if not provided in body
+      if (!body.company_name) body.company_name = organization.name;
+      if (!body.company_logo) body.company_logo = organization.logo_url;
+      if (!body.company_website) body.company_website = organization.website;
+      if (!body.company_description) body.company_description = organization.description;
+    }
+
     // Prepare job offer data
     const jobData = {
-      // Company Information
+      // Organization Reference (new)
+      organization_id: body.organization_id || null,
+
+      // Company Information (for legacy support or standalone jobs)
       company_name: body.company_name,
       company_logo: body.company_logo || null,
       company_website: body.company_website || null,

@@ -1,17 +1,19 @@
 "use client";
 
 import React from 'react';
-import { Briefcase, MenuIcon, LogOut } from 'lucide-react';
+import { Briefcase, MenuIcon, LogOut, User } from 'lucide-react';
 import { Sheet, SheetContent, SheetFooter } from '@/components/sheet';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface FloatingHeaderProps {
 	userEmail?: string | null;
+	profilePicture?: string | null;
 }
 
-export function FloatingHeader({ userEmail }: FloatingHeaderProps) {
+export function FloatingHeader({ userEmail, profilePicture }: FloatingHeaderProps) {
 	const [open, setOpen] = React.useState(false);
 	const [showDropdown, setShowDropdown] = React.useState(false);
 	const router = useRouter();
@@ -98,9 +100,19 @@ export function FloatingHeader({ userEmail }: FloatingHeaderProps) {
 						<div className="relative" ref={dropdownRef}>
 							<button
 								onClick={() => setShowDropdown(!showDropdown)}
-								className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
+								className="flex h-9 w-9 items-center justify-center rounded-full overflow-hidden bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity border-2 border-primary/20"
 							>
-								{getInitials(userEmail)}
+								{profilePicture ? (
+									<Image
+										src={profilePicture}
+										alt="Profile"
+										width={36}
+										height={36}
+										className="object-cover w-full h-full"
+									/>
+								) : (
+									<User className="w-5 h-5" />
+								)}
 							</button>
 							{showDropdown && (
 								<div className="absolute right-0 mt-2 w-48 rounded-md border bg-popover shadow-lg z-50">

@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient as createServerClient } from '@/lib/server'
 
 // Create a Supabase client with service role key (bypasses RLS)
 const supabaseAdmin = createClient(
@@ -15,12 +16,21 @@ const supabaseAdmin = createClient(
 
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData()
+    // Get authenticated user
+    const supabase = await createServerClient()
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
     
-    const file = formData.get('file') as File
-    const userId = formData.get('userId') as string
+    if (userError || !user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
 
-    if (!file || !userId) {
+    const formData = await request.formData()
+    const file = formData.get('resume') as File
+
+    if (!file) {
       return NextResponse.json(
         { error: 'Missing file or userId' },
         { status: 400 }
@@ -40,7 +50,7 @@ export async function POST(request: NextRequest) {
       const { data: profile } = await supabaseAdmin
         .from('profiles')
         .select('resume')
-        .eq('id', userId)
+        .eq('id', user.id)
         .single()
 
       if (profile?.resume) {
@@ -63,7 +73,7 @@ export async function POST(request: NextRequest) {
 
     // Use datetime-based filename to avoid caching issues
     const timestamp = new Date().toISOString()
-    const fileName = `${userId}_${timestamp}.pdf`
+    const fileName = `${user.id}_${timestamp}.pdf`
 
     // Upload using service role client (bypasses RLS)
     const { error: uploadError } = await supabaseAdmin.storage
@@ -94,7 +104,7 @@ export async function POST(request: NextRequest) {
         resume: publicUrl,
         is_resume_latex: false 
       })
-      .eq('id', userId)
+      .eq('id', user.id)
 
     if (updateError) {
       console.error('Profile update error:', updateError)
@@ -106,7 +116,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ 
       success: true, 
-      resumeUrl: publicUrl 
+      url: publicUrl 
     })
   } catch (error) {
     console.error('Resume upload error:', error)

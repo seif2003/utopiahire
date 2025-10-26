@@ -100,6 +100,10 @@ export function JobDetails({ jobId }: JobDetailsProps) {
         setUserProfile(data)
         setEmail(data.email || '')
         setPhone(data.phone || '')
+        // If user doesn't have an existing resume, default to upload new
+        if (!data.resume) {
+          setUseExistingResume(false)
+        }
       }
     } catch (error) {
       console.error('Error fetching user profile:', error)
@@ -220,13 +224,18 @@ export function JobDetails({ jobId }: JobDetailsProps) {
       return
     }
 
+    if (useExistingResume && !userProfile?.resume) {
+      toast.error('No existing resume found. Please upload one.')
+      return
+    }
+
     setIsSubmittingApplication(true)
 
     try {
       const applicationData = {
         job_id: jobId,
         cover_letter: coverLetter || null,
-        resume_url: useExistingResume ? userProfile?.resume_url : newResumeUrl,
+        resume_url: useExistingResume ? userProfile?.resume : newResumeUrl,
         email,
         phone,
       }
@@ -605,7 +614,7 @@ export function JobDetails({ jobId }: JobDetailsProps) {
             <div className="space-y-3">
               <Label>Resume</Label>
               <div className="space-y-2">
-                {userProfile?.resume_url && (
+                {userProfile?.resume && (
                   <div className="flex items-center space-x-2">
                     <input
                       type="radio"

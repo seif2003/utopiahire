@@ -131,7 +131,7 @@ export function SkillsStep({ userId, existingData, onNext }: SkillsStepProps) {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg flex items-center">
-                <Zap className="h-5 w-5 mr-2 text-indigo-600" />
+                <Zap className="h-5 w-5 mr-2 " />
                 Skill #{index + 1}
               </CardTitle>
               {skills.length > 1 && (
@@ -220,7 +220,7 @@ export function SkillsStep({ userId, existingData, onNext }: SkillsStepProps) {
         <Button
           type="submit"
           disabled={isLoading}
-          className="bg-indigo-600 hover:bg-indigo-700"
+          
         >
           {isLoading ? (
             <>
