@@ -72,7 +72,7 @@ export function FloatingHeader({ userEmail, profilePicture }: FloatingHeaderProp
 	return (
 		<header
 			className={cn(
-				'sticky top-5 z-50',
+				'fixed top-5 left-1/2 -translate-x-1/2 z-50',
 				'mx-auto w-full max-w-3xl rounded-lg border shadow',
 				'bg-background/95 supports-[backdrop-filter]:bg-background/80 backdrop-blur-lg',
 			)}
@@ -80,8 +80,8 @@ export function FloatingHeader({ userEmail, profilePicture }: FloatingHeaderProp
 			<nav className="mx-auto flex items-center justify-between p-1.5">
 				<a href="/" >
 				<div className="hover:bg-accent flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 duration-100">
-					<Briefcase className="size-5" />
-					<p className="font-mono text-base font-bold">Utopia Hire</p>
+					<img src="/logo1.png" alt="Utopia Hire Logo" className="h-8 w-8"/>
+					<p className="font-mono text-base font-bold text-primary">Utopia Hire</p>
 				</div>
 				</a>
 				<div className="hidden items-center gap-1 lg:flex">
