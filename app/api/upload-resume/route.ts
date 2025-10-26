@@ -28,25 +28,54 @@ export async function POST(request: NextRequest) {
     }
 
     const formData = await request.formData()
-    const file = formData.get('resume') as File
+    const file = formData.get('file') as File
 
     if (!file) {
       return NextResponse.json(
-        { error: 'Missing file or userId' },
+        { error: 'Missing file' },
         { status: 400 }
       )
     }
 
-    if (file.type !== 'application/pdf') {
+    // Validate file type
+    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+    if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
-        { error: 'Only PDF files are allowed' },
+        { error: 'Only PDF, DOC, and DOCX files are allowed' },
         { status: 400 }
       )
     }
 
-    // Delete old resume file if exists
+    // Send file to n8n for processing
+    const n8nFormData = new FormData()
+    n8nFormData.append('document', file)
+    n8nFormData.append('user_id', user.id)
+
+    const n8nUrl = process.env.N8N_WEBHOOK_URL || 'https://n8n.benamara.tn/webhook-test/autopiahire/scan'
+    const apiKey = process.env.N8N_API_KEY || ''
+
+    const n8nResponse = await fetch(n8nUrl, {
+      method: 'POST',
+      headers: {
+        'api_key': apiKey,
+      },
+      body: n8nFormData,
+    })
+
+    if (!n8nResponse.ok) {
+      const errorText = await n8nResponse.text()
+      console.error('n8n error:', errorText)
+      return NextResponse.json(
+        { error: 'Failed to process resume', details: errorText },
+        { status: 500 }
+      )
+    }
+
+    const n8nResult = await n8nResponse.json()
+
+    // Also upload the file to Supabase storage for backup
     try {
-      // Get current resume URL from profile
+      // Delete old resume file if exists
       const { data: profile } = await supabaseAdmin
         .from('profiles')
         .select('resume')
@@ -54,72 +83,55 @@ export async function POST(request: NextRequest) {
         .single()
 
       if (profile?.resume) {
-        // Extract filename from URL
         const oldFileName = profile.resume.split('/').pop()?.split('?')[0]
         if (oldFileName) {
-          // Delete old file (ignore errors if file doesn't exist)
           await supabaseAdmin.storage
             .from('resumes')
             .remove([oldFileName])
+            .catch(() => {}) // Ignore errors
         }
       }
-    } catch (error) {
-      console.log('No old resume to delete or error deleting:', error)
+
+      // Upload new file
+      const arrayBuffer = await file.arrayBuffer()
+      const buffer = Buffer.from(arrayBuffer)
+      const timestamp = new Date().toISOString()
+      const fileName = `${user.id}_${timestamp}.pdf`
+
+      const { error: uploadError } = await supabaseAdmin.storage
+        .from('resumes')
+        .upload(fileName, buffer, {
+          contentType: file.type,
+          cacheControl: 'no-cache, no-store, must-revalidate',
+          upsert: false,
+        })
+
+      if (!uploadError) {
+        const { data: { publicUrl } } = supabaseAdmin.storage
+          .from('resumes')
+          .getPublicUrl(fileName)
+
+        // Update profile with resume URL
+        await supabaseAdmin
+          .from('profiles')
+          .update({ 
+            resume: publicUrl,
+            is_resume_latex: false,
+            updated_at: new Date().toISOString() 
+          })
+          .eq('id', user.id)
+      }
+    } catch (storageError) {
+      console.error('Storage error (non-fatal):', storageError)
     }
 
-    // Convert File to ArrayBuffer then to Buffer for upload
-    const arrayBuffer = await file.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
-
-    // Use datetime-based filename to avoid caching issues
-    const timestamp = new Date().toISOString()
-    const fileName = `${user.id}_${timestamp}.pdf`
-
-    // Upload using service role client (bypasses RLS)
-    const { error: uploadError } = await supabaseAdmin.storage
-      .from('resumes')
-      .upload(fileName, buffer, {
-        contentType: 'application/pdf',
-        cacheControl: 'no-cache, no-store, must-revalidate',
-        upsert: false, // Don't overwrite, create new file
-      })
-
-    if (uploadError) {
-      console.error('Upload error:', uploadError)
-      return NextResponse.json(
-        { error: 'Failed to upload resume' },
-        { status: 500 }
-      )
-    }
-
-    // Get public URL
-    const { data: { publicUrl } } = supabaseAdmin.storage
-      .from('resumes')
-      .getPublicUrl(fileName)
-
-    // Update profile with resume URL and set is_resume_latex to false
-    const { error: updateError } = await supabaseAdmin
-      .from('profiles')
-      .update({ 
-        resume: publicUrl,
-        is_resume_latex: false 
-      })
-      .eq('id', user.id)
-
-    if (updateError) {
-      console.error('Profile update error:', updateError)
-      return NextResponse.json(
-        { error: 'Failed to update profile' },
-        { status: 500 }
-      )
-    }
-
-    return NextResponse.json({ 
-      success: true, 
-      url: publicUrl 
+    return NextResponse.json({
+      success: true,
+      message: 'Resume processed successfully',
+      data: n8nResult
     })
   } catch (error) {
-    console.error('Resume upload error:', error)
+    console.error('Error processing resume:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

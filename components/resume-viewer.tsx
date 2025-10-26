@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { FileText, Code, Upload, Download, Save, Loader2, Eye, RefreshCw, Sparkles } from 'lucide-react'
+import { FileText, Code, Upload, Download, Save, Loader2, Eye, RefreshCw, Sparkles, Edit } from 'lucide-react'
 import { createClient } from '@/lib/client'
 import { toast } from 'sonner'
 import dynamic from 'next/dynamic'
@@ -23,6 +24,7 @@ interface ResumeViewerProps {
 }
 
 export function ResumeViewer({ userId, resumeUrl, resumeLatex, isResumeLatex }: ResumeViewerProps) {
+  const router = useRouter()
   const [latexCode, setLatexCode] = useState(resumeLatex || '')
   const [isSaving, setIsSaving] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
@@ -219,6 +221,11 @@ export function ResumeViewer({ userId, resumeUrl, resumeLatex, isResumeLatex }: 
 
         {/* Action Buttons */}
         <div className="mb-6 flex flex-wrap gap-3">
+          <Button onClick={() => router.push('/main/edit-profile')} variant="default">
+            <Edit className="mr-2 h-4 w-4" />
+            Edit Profile Data
+          </Button>
+
           <Button onClick={handleDownload} variant="outline">
             <Download className="mr-2 h-4 w-4" />
             Download PDF
@@ -233,7 +240,7 @@ export function ResumeViewer({ userId, resumeUrl, resumeLatex, isResumeLatex }: 
 
           <Button 
             onClick={handleGenerateWithAI} 
-            variant="default"
+            variant="outline"
             disabled={isGenerating}
           >
             {isGenerating ? (

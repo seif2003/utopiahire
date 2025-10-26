@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Upload, FileText, ArrowRight } from 'lucide-react'
+import { Upload, FileText, ArrowRight, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface OnboardingResumeProps {
   userId: string
@@ -19,37 +20,65 @@ export function OnboardingResume({ userId }: OnboardingResumeProps) {
     if (!file) return
 
     setUploading(true)
+    
     try {
-      // TODO: Implement resume upload logic
+      toast.info('Uploading and processing your resume...')
+      
       const formData = new FormData()
       formData.append('file', file)
-      formData.append('userId', userId)
 
       const response = await fetch('/api/upload-resume', {
         method: 'POST',
         body: formData,
       })
 
-      if (response.ok) {
-        // Mark first login as complete and redirect
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to upload resume')
+      }
+
+      setUploading(false)
+      
+      // Check if n8n processing was successful
+      if (result.success) {
+        toast.success('Resume processed successfully!')
+        
+        // Mark onboarding as complete
         await fetch('/api/complete-onboarding', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId, hasResume: true }),
         })
+        
+        // Navigate to my-resume to view the uploaded PDF
+        router.push('/main/my-resume')
         router.refresh()
+      } else {
+        throw new Error('Resume processing failed')
       }
     } catch (error) {
       console.error('Upload failed:', error)
-    } finally {
+      toast.error(error instanceof Error ? error.message : 'Failed to upload resume. Please try again.')
       setUploading(false)
     }
   }
 
-  const handleCreateResume = () => {
-    // Navigate to resume builder
-    // The complete-onboarding API will be called after user completes all steps
-    router.push('/main/resume-builder')
+  const handleCreateResume = async () => {
+    // Mark onboarding as complete and navigate to resume builder
+    try {
+      await fetch('/api/complete-onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, hasResume: false }),
+      })
+      
+      router.push('/main/resume-builder')
+      router.refresh()
+    } catch (error) {
+      console.error('Error:', error)
+      router.push('/main/resume-builder')
+    }
   }
 
   return (
@@ -77,7 +106,10 @@ export function OnboardingResume({ userId }: OnboardingResumeProps) {
                   Upload Your Resume
                 </h3>
                 <p className="text-muted-foreground">
-                  Already have a resume? Upload it and we'll extract your information automatically.
+                  Already have a resume? Upload it and we'll extract your information automatically to your profile.
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Your uploaded resume will be saved and displayed. You can edit the extracted profile data anytime from your profile settings.
                 </p>
               </div>
 
@@ -89,8 +121,17 @@ export function OnboardingResume({ userId }: OnboardingResumeProps) {
                     asChild
                   >
                     <span>
-                      {uploading ? 'Uploading...' : 'Upload Resume'}
-                      <ArrowRight className="ml-2 w-4 h-4" />
+                      {uploading ? (
+                        <>
+                          <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          Upload Resume
+                          <ArrowRight className="ml-2 w-4 h-4" />
+                        </>
+                      )}
                     </span>
                   </Button>
                 </label>
@@ -122,7 +163,7 @@ export function OnboardingResume({ userId }: OnboardingResumeProps) {
                   Create a New Resume
                 </h3>
                 <p className="text-muted-foreground">
-                  Don't have a resume? No problem! We'll guide you through creating one from scratch.
+                  Don't have a resume? No problem! We'll guide you through building a professional resume from scratch with our step-by-step builder.
                 </p>
               </div>
 
