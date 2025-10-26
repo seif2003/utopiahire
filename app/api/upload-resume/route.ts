@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     n8nFormData.append('document', file)
     n8nFormData.append('user_id', user.id)
 
-    const n8nUrl = process.env.N8N_WEBHOOK_URL || 'https://n8n.benamara.tn/webhook-test/autopiahire/scan'
+    const n8nUrl = process.env.N8N_WEBHOOK_URL || 'https://n8n.benamara.tn/webhook/autopiahire/scan'
     const apiKey = process.env.N8N_API_KEY || ''
 
     const n8nResponse = await fetch(n8nUrl, {

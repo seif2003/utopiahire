@@ -42,18 +42,10 @@ export function OnboardingResume({ userId }: OnboardingResumeProps) {
       
       // Check if n8n processing was successful
       if (result.success) {
-        toast.success('Resume processed successfully!')
+        toast.success('Resume processed successfully! Review your information...')
         
-        // Mark onboarding as complete
-        await fetch('/api/complete-onboarding', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId, hasResume: true }),
-        })
-        
-        // Navigate to my-resume to view the uploaded PDF
-        router.push('/main/my-resume')
-        router.refresh()
+        // Navigate to profile review stepper to review and edit extracted data
+        window.location.href = '/main/profile-review'
       } else {
         throw new Error('Resume processing failed')
       }
@@ -106,10 +98,10 @@ export function OnboardingResume({ userId }: OnboardingResumeProps) {
                   Upload Your Resume
                 </h3>
                 <p className="text-muted-foreground">
-                  Already have a resume? Upload it and we'll extract your information automatically to your profile.
+                  Already have a resume? Upload it and we'll extract your information automatically.
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Your uploaded resume will be saved and displayed. You can edit the extracted profile data anytime from your profile settings.
+                  After processing, you'll review and verify all extracted information step by step.
                 </p>
               </div>
 
