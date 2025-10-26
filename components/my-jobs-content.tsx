@@ -64,7 +64,7 @@ export function MyJobsContent({ userId }: MyJobsContentProps) {
   }
 
   const handleDeleteJob = async (jobId: string) => {
-    if (!confirm('Are you sure you want to delete this job posting?')) {
+    if (!confirm('Are you sure you want to delete this job posting? This will also delete all associated documents.')) {
       return
     }
 
@@ -78,11 +78,34 @@ export function MyJobsContent({ userId }: MyJobsContentProps) {
         throw new Error(error.error || 'Failed to delete job')
       }
 
-      toast.success('Job deleted successfully')
+      toast.success('Job and associated documents deleted successfully')
       fetchMyJobs()
     } catch (error) {
       console.error('Error deleting job:', error)
       toast.error(error instanceof Error ? error.message : 'Failed to delete job')
+    }
+  }
+
+  const handleStatusChange = async (jobId: string, newStatus: string) => {
+    try {
+      const response = await fetch(`/api/jobs/${jobId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to update job status')
+      }
+
+      toast.success(`Job status updated to ${newStatus}`)
+      fetchMyJobs()
+    } catch (error) {
+      console.error('Error updating job status:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to update job status')
     }
   }
 
@@ -186,32 +209,47 @@ export function MyJobsContent({ userId }: MyJobsContentProps) {
                   </div>
                 </div>
               </CardContent>
-              <CardFooter className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => router.push(`/main/jobs/${job.id}`)}
-                >
-                  <Eye className="w-4 h-4 mr-1" />
-                  View
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => router.push(`/main/jobs/${job.id}/applications`)}
-                >
-                  <Users className="w-4 h-4 mr-1" />
-                  Candidates ({job.applications_count || 0})
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleDeleteJob(job.id)}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+              <CardFooter className="flex flex-col gap-2">
+                <div className="flex gap-2 w-full">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => router.push(`/main/jobs/${job.id}`)}
+                  >
+                    <Eye className="w-4 h-4 mr-1" />
+                    View
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => router.push(`/main/jobs/${job.id}/applications`)}
+                  >
+                    <Users className="w-4 h-4 mr-1" />
+                    Candidates ({job.applications_count || 0})
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDeleteJob(job.id)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+                <div className="flex items-center gap-2 w-full">
+                  <label className="text-sm text-muted-foreground whitespace-nowrap">Status:</label>
+                  <select
+                    value={job.status}
+                    onChange={(e) => handleStatusChange(job.id, e.target.value)}
+                    className="flex-1 h-8 rounded-md border border-input bg-background px-2 text-sm"
+                  >
+                    <option value="draft">Draft</option>
+                    <option value="active">Active</option>
+                    <option value="paused">Paused</option>
+                    <option value="closed">Closed</option>
+                  </select>
+                </div>
               </CardFooter>
             </Card>
           ))}

@@ -121,11 +121,11 @@ export async function POST(request: Request) {
 
     // Notify external webhook with the created job ID (best-effort)
     try {
-      const webhookUrl = process.env.N8N_WEBHOOK_URL || 'https://n8n.benamara.tn/webhook/autopiahire/add-job';
+      const webhookUrl = 'https://n8n.benamara.tn/webhook/autopiahire/add-job';
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000); // 2s timeout
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
 
-      // send only the id to the webhook; include api_key header expected by n8n
+      // send job_id to the webhook; include api_key header expected by n8n
       const res = await fetch(webhookUrl, {
         method: 'POST',
         headers: {
@@ -141,6 +141,8 @@ export async function POST(request: Request) {
       if (!res.ok) {
         const text = await res.text().catch(() => '');
         console.warn('Webhook returned non-OK status', res.status, text);
+      } else {
+        console.log('Job webhook notification sent successfully for job:', jobOffer?.id);
       }
     } catch (hookErr) {
       console.warn('Error calling webhook (non-fatal):', hookErr);

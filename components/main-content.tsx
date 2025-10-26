@@ -31,7 +31,7 @@ interface Job {
 }
 
 export function MainContent() {
-  const [isLoadingSummary, setIsLoadingSummary] = useState(true)
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false)
   const [isLoadingJobs, setIsLoadingJobs] = useState(false)
   const [showDialog, setShowDialog] = useState(true)
   const [summary, setSummary] = useState('')
@@ -40,29 +40,25 @@ export function MainContent() {
   const [page, setPage] = useState(0)
   const pageSize = 12
 
-  useEffect(() => {
-    fetchSummary()
-  }, [])
-
-  const fetchSummary = async () => {
-    setIsLoadingSummary(true)
+  const generateSummary = async () => {
+    setIsGeneratingSummary(true)
     try {
       const response = await fetch('/api/get-summary')
       
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.error || 'Failed to fetch summary')
+        throw new Error(error.error || 'Failed to generate summary')
       }
 
       const data = await response.json()
       setSummary(data.summary || '')
       setEditedSummary(data.summary || '')
+      toast.success('Summary generated successfully!')
     } catch (error) {
-      console.error('Error fetching summary:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to fetch summary')
-      setShowDialog(false)
+      console.error('Error generating summary:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to generate summary')
     } finally {
-      setIsLoadingSummary(false)
+      setIsGeneratingSummary(false)
     }
   }
 
@@ -122,40 +118,55 @@ export function MainContent() {
               Your Job Preferences
             </DialogTitle>
             <DialogDescription>
-              We've generated a summary based on your profile. You can edit it to refine your job search.
+              Enter your job preferences or click "Generate with AI" to create a summary based on your profile.
             </DialogDescription>
           </DialogHeader>
 
-          {isLoadingSummary ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <Textarea
-                value={editedSummary}
-                onChange={(e) => setEditedSummary(e.target.value)}
-                rows={6}
-                placeholder="Describe what kind of job you're looking for..."
-                className="resize-none"
-              />
+          <div className="space-y-4">
+            <Textarea
+              value={editedSummary}
+              onChange={(e) => setEditedSummary(e.target.value)}
+              rows={6}
+              placeholder="Describe what kind of job you're looking for... (e.g., 'I'm looking for a remote full-stack developer position with React and Node.js')"
+              className="resize-none"
+              disabled={isGeneratingSummary}
+            />
+            <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">
-                This summary will be used to find the best matching jobs for you.
+                This will be used to find the best matching jobs for you.
               </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={generateSummary}
+                disabled={isGeneratingSummary || isLoadingJobs}
+              >
+                {isGeneratingSummary ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Generate with AI
+                  </>
+                )}
+              </Button>
             </div>
-          )}
+          </div>
 
           <DialogFooter>
             <Button
               variant="outline"
               onClick={() => setShowDialog(false)}
-              disabled={isLoadingSummary || isLoadingJobs}
+              disabled={isGeneratingSummary || isLoadingJobs}
             >
               Cancel
             </Button>
             <Button
               onClick={handleFindJobs}
-              disabled={isLoadingSummary || isLoadingJobs || !editedSummary.trim()}
+              disabled={isGeneratingSummary || isLoadingJobs || !editedSummary.trim()}
             >
               {isLoadingJobs ? (
                 <>
