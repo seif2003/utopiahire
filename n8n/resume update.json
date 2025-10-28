@@ -1,0 +1,378 @@
+{
+  "name": "resume update",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/autopiahire/compile-latex",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -384,
+        80
+      ],
+      "id": "1da4459f-401b-466b-bc7d-1a39e8916e41",
+      "name": "Webhook1",
+      "webhookId": "085a9f31-e230-4220-8b22-96ba80c02e24",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Whiid7VC5CPCK8Yf",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200,
+          "responseKey": "={ \"resume_url\": {{ $json.resume }}}"
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1440,
+        80
+      ],
+      "id": "50f98a0d-9ec4-4b95-963e-f0e2180f9cef",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "command": "=# Create temp directory\nTEMP_DIR=$(mktemp -d)\n\n# Save LaTeX file\necho '{{ $json.body.latex_code }}' > \"$TEMP_DIR/resume.tex\"\n\n# Compile to PDF (non-interactive)\ncd \"$TEMP_DIR\"\npdflatex -interaction=nonstopmode resume.tex\n\n# Output the PDF path\necho \"$TEMP_DIR/resume.pdf\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        80
+      ],
+      "id": "42d8b155-a7d4-4039-9677-187f35801e50",
+      "name": "Execute Command2"
+    },
+    {
+      "parameters": {
+        "command": "=curl -X PUT '{{$('Keys').item.json.Endpoint}}/resumes/{{ $json.file_name }}' \\\n  --aws-sigv4 \"aws:amz:{{$('Keys').item.json.Region}}:s3\" \\\n  --user \"{{$('Keys').item.json.ACCESS_KEY}}:{{$('Keys').item.json.SECRET_KEY}}\" \\\n  -H 'Content-Type: application/pdf' \\\n  --data-binary @{{ $('Code in JavaScript1').item.json.pdfPath }}"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        976,
+        80
+      ],
+      "id": "73b0a8b2-4e6d-4627-a430-0cf896a84e85",
+      "name": "Execute Command3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the LaTeX command output (adjust the field name if needed)\nconst latexOutput = $input.first().json.stdout || '';\n\n// Regex to find PDF path\nconst pdfPathMatch = latexOutput.match(/\\/[^\\s]+\\.pdf\\b/);\n\n// Loop over all items and add the PDF path\nfor (const item of $input.all()) {\n    item.json.pdfPath = pdfPathMatch ? pdfPathMatch[0] : null;\n}\n\n// Return all items\nreturn $input.all();\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        48,
+        80
+      ],
+      "id": "3b60b5af-1576-45c9-91d6-ac928bb38efc",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "profiles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Webhook1').item.json.body.user_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "resume",
+              "fieldValue": "=https://ueoqvwoxgnivpixdsnde.supabase.co/storage/v1/object/public/resumes/{{ $('Edit Fields').item.json.file_name }}"
+            },
+            {
+              "fieldId": "resume_latex",
+              "fieldValue": "={{ $('Webhook1').item.json.body.latex_code }}"
+            },
+            {
+              "fieldId": "is_resume_latex",
+              "fieldValue": "true"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        80
+      ],
+      "id": "08d5b640-f9f5-435f-a094-b92452739dca",
+      "name": "Update a row1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "zsk4Lsu1xj8gdQKh",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fileSelector": "/tmp/tmp.JpdcFb/resume.pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        976,
+        -208
+      ],
+      "id": "e381d598-fd4c-4aed-ae0c-bf46a8a436f0",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "command": "rm -rf \"$TEMP_DIR\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1664,
+        80
+      ],
+      "id": "25e87600-4771-40eb-bc40-81fbd1f28b3d",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "pghDECxe7vN6rXzj",
+          "mode": "list",
+          "cachedResultName": "Delete old resume"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_id": "={{ $('Webhook1').item.json.body.user_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        272,
+        80
+      ],
+      "id": "57c97165-13b0-4a62-814d-133a69fdd668",
+      "name": "Call 'Delete old resume'"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "978bc829-1e4f-4e73-a081-f5b5a8d74f1c",
+              "name": "file_name",
+              "value": "={{ $('Webhook1').item.json.body.user_id}}_{{ new Date().toISOString() }}.pdf",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        752,
+        80
+      ],
+      "id": "4109413f-95b8-4386-8017-c1e8249cd5d8",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a97fb294-b501-4022-ba01-df88de36e298",
+              "name": "ACCESS_KEY",
+              "value": "5bc7f4f736a4753b54d00585ca899513",
+              "type": "string"
+            },
+            {
+              "id": "06401d0c-8bed-40ce-9c0c-97ee2d8cb1c5",
+              "name": "SECRET_KEY",
+              "value": "89d7d0601c860c069705020eeb0b1455678fdbb976af3d1d5798e1efba693f85",
+              "type": "string"
+            },
+            {
+              "id": "a8fcac8d-71f3-4af5-ba1a-115353265bd2",
+              "name": "Endpoint",
+              "value": "https://ueoqvwoxgnivpixdsnde.storage.supabase.co/storage/v1/s3",
+              "type": "string"
+            },
+            {
+              "id": "b01d9be5-8d37-4367-9561-ceeefe049272",
+              "name": "Region",
+              "value": "eu-west-3",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        528,
+        80
+      ],
+      "id": "09251ebc-d02a-4d2d-b409-65eb4837db6e",
+      "name": "Keys"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Execute Command2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command3": {
+      "main": [
+        [
+          {
+            "node": "Update a row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Call 'Delete old resume'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command": {
+      "main": [
+        []
+      ]
+    },
+    "Call 'Delete old resume'": {
+      "main": [
+        [
+          {
+            "node": "Keys",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Execute Command3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keys": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d8dc5e5c-3146-4057-bd16-279fdc0ed93f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b2ffcdbeb1787fd778faf5466eed975d1bd1db574504dc36640ba126d4d12bae"
+  },
+  "id": "6bvi8PRHThVKQ0vL",
+  "tags": []
+}

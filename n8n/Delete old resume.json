@@ -1,0 +1,170 @@
+{
+  "name": "Delete old resume",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "user_id"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -352,
+        -16
+      ],
+      "id": "838d3d32-06da-4428-86b4-85d80e92218e",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "profiles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        -16
+      ],
+      "id": "a1d0d8ce-3463-4bf4-8843-497b4a186177",
+      "name": "Get a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "zsk4Lsu1xj8gdQKh",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "command": "=curl -X DELETE '{{$('Keys').item.json.Endpoint}}/object/resumes/{{ $('Code in JavaScript').item.json.filename}}' \\\n  -H \"Authorization: Bearer {{$('Keys').item.json.SUPABASE_SERVICE_ROLE_KEY}}\" \\\n  -H \"apikey: {{$('Keys').item.json.SUPABASE_ANON_KEY}}\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        544,
+        -16
+      ],
+      "id": "a7f02462-ed9b-4006-b7ab-631084274987",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "jsCode": "const url = $input.first().json.resume;\n\n// Extract the filename from the URL\nconst filename = url.split('/').pop();\n\nreturn { filename };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        -16
+      ],
+      "id": "9194398f-c99d-4ab2-b915-9ec5209979c3",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a8fcac8d-71f3-4af5-ba1a-115353265bd2",
+              "name": "Endpoint",
+              "value": "https://ueoqvwoxgnivpixdsnde.supabase.co/storage/v1",
+              "type": "string"
+            },
+            {
+              "id": "d8f30e75-1918-4af6-b3ff-5c5d8c538a49",
+              "name": "SUPABASE_SERVICE_ROLE_KEY",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVlb3F2d294Z25pdnBpeGRzbmRlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDIyMjY4NywiZXhwIjoyMDc1Nzk4Njg3fQ.aQQAB8DCzlpnHjATzkQnYmHNjSmQv7743uhG40DHhVs",
+              "type": "string"
+            },
+            {
+              "id": "7371a5de-a933-4ff1-aaed-ffc5e24abbbf",
+              "name": "SUPABASE_ANON_KEY",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVlb3F2d294Z25pdnBpeGRzbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAyMjI2ODcsImV4cCI6MjA3NTc5ODY4N30.Sqk2Zwr0HhqpN3VUvnMkLhjNbNiQ4JE1CZ-kkBG7Cm0",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        304,
+        -16
+      ],
+      "id": "f28b32c6-2c63-49ef-93d9-8f6bf45573fe",
+      "name": "Keys"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Get a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Keys",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keys": {
+      "main": [
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4b1df6cb-a723-4ced-9478-1cfd9afba9ae",
+  "meta": {
+    "instanceId": "b2ffcdbeb1787fd778faf5466eed975d1bd1db574504dc36640ba126d4d12bae"
+  },
+  "id": "pghDECxe7vN6rXzj",
+  "tags": []
+}

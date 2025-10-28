@@ -1,0 +1,762 @@
+{
+  "name": "Resume reader",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/autopiahire/scan",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1296,
+        -16
+      ],
+      "id": "c9c2dab7-89fd-4663-a67a-2d391325a19b",
+      "name": "Webhook",
+      "webhookId": "4c779ae0-51f0-4f07-908f-1b681c512e69",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Whiid7VC5CPCK8Yf",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "binaryPropertyName": "document"
+      },
+      "name": "Read PDF",
+      "type": "n8n-nodes-base.readPDF",
+      "position": [
+        -1024,
+        -16
+      ],
+      "typeVersion": 1,
+      "id": "08883d03-5ffd-4593-a694-878e568d64e5"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Parse the user input into a JSON object, ensuring that the skill_level is one of 'beginner', 'intermediate', or 'advanced', and proficiency is one of 'beginner', 'intermediate', 'fluent', or 'native'."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -752,
+        -16
+      ],
+      "id": "82a8c03c-a88f-41f3-b8fd-cb2b598f870d",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -752,
+        160
+      ],
+      "id": "a1bc7c66-a993-4f15-8e5a-d0d934d21404",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "M9WlIEfpWrKhAxt3",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "certifications",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $('Webhook').item.json.body.user_id }}"
+            },
+            {
+              "fieldId": "name",
+              "fieldValue": "={{ $json.name }}"
+            },
+            {
+              "fieldId": "issuer",
+              "fieldValue": "={{ $json.issuer }}"
+            },
+            {
+              "fieldId": "year",
+              "fieldValue": "={{ $json.year }}"
+            },
+            {
+              "fieldId": "credential_url",
+              "fieldValue": "={{ $json.credential_url }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        -336
+      ],
+      "id": "a51efcad-03a0-495f-9ea1-b35cd7464f6a",
+      "name": "Certifications",
+      "credentials": {
+        "supabaseApi": {
+          "id": "zsk4Lsu1xj8gdQKh",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "projects",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $('Webhook').item.json.body.user_id }}"
+            },
+            {
+              "fieldId": "title",
+              "fieldValue": "={{ $json.title }}"
+            },
+            {
+              "fieldId": "description",
+              "fieldValue": "={{ $json.description }}"
+            },
+            {
+              "fieldId": "tech_stack",
+              "fieldValue": "={{ $json.tech_stack }}"
+            },
+            {
+              "fieldId": "role",
+              "fieldValue": "={{ $json.role }}"
+            },
+            {
+              "fieldId": "links",
+              "fieldValue": "={{ $json.links }}"
+            },
+            {
+              "fieldId": "impact",
+              "fieldValue": "={{ $json.impact }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        -176
+      ],
+      "id": "af15b096-6e44-4add-b167-e6c2d7139c19",
+      "name": "Projects",
+      "credentials": {
+        "supabaseApi": {
+          "id": "zsk4Lsu1xj8gdQKh",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "skills",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $('Webhook').item.json.body.user_id }}"
+            },
+            {
+              "fieldId": "name",
+              "fieldValue": "={{ $json.name }}"
+            },
+            {
+              "fieldId": "category",
+              "fieldValue": "={{ $json.category }}"
+            },
+            {
+              "fieldId": "level",
+              "fieldValue": "={{ $json.level }}"
+            },
+            {
+              "fieldId": "verified",
+              "fieldValue": "={{ $json.verified }}"
+            },
+            {
+              "fieldId": "verification_source",
+              "fieldValue": "={{ $json.verification_source }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        -16
+      ],
+      "id": "e3122609-e28d-41fe-bd25-4eee6d01e1f6",
+      "name": "Skills",
+      "credentials": {
+        "supabaseApi": {
+          "id": "zsk4Lsu1xj8gdQKh",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "experiences",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $('Webhook').item.json.body.user_id }}"
+            },
+            {
+              "fieldId": "title",
+              "fieldValue": "={{ $json.title }}"
+            },
+            {
+              "fieldId": "company",
+              "fieldValue": "={{ $json.company }}"
+            },
+            {
+              "fieldId": "location",
+              "fieldValue": "={{ $json.lcoation }}"
+            },
+            {
+              "fieldId": "start_date",
+              "fieldValue": "={{ $json.start_date }}"
+            },
+            {
+              "fieldId": "end_date",
+              "fieldValue": "={{ $json.end_date }}"
+            },
+            {
+              "fieldId": "description",
+              "fieldValue": "={{ $json.description }}"
+            },
+            {
+              "fieldId": "proof_link",
+              "fieldValue": "={{ $json.proof_link }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        144
+      ],
+      "id": "5efcfa0a-eced-4178-8ee6-d422f656aaeb",
+      "name": "Experience",
+      "credentials": {
+        "supabaseApi": {
+          "id": "zsk4Lsu1xj8gdQKh",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "education",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $('Webhook').item.json.body.user_id }}"
+            },
+            {
+              "fieldId": "institution",
+              "fieldValue": "={{ $json.institution }}"
+            },
+            {
+              "fieldId": "degree",
+              "fieldValue": "={{ $json.degree }}"
+            },
+            {
+              "fieldId": "field_of_study",
+              "fieldValue": "={{ $json.field_of_study }}"
+            },
+            {
+              "fieldId": "start_year",
+              "fieldValue": "={{ $json['start year'] }}"
+            },
+            {
+              "fieldId": "end_year",
+              "fieldValue": "={{ $json.end_year }}"
+            },
+            {
+              "fieldId": "description",
+              "fieldValue": "={{ $json.description }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        304
+      ],
+      "id": "4a27405b-87bb-4196-a1ff-35462a6b398c",
+      "name": "Education",
+      "credentials": {
+        "supabaseApi": {
+          "id": "zsk4Lsu1xj8gdQKh",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"certifications\": [\n      {\"name\":\"name example\",\n        \"issuer\":\"issuer example\",\n        \"year\":2025,\n        \"credential_url\":\"https://www.example.com\"\n      }\n    ],\n\t\"projects\": [\n      {\n        \"title\":\"title example\",\n        \"description\":\"description example\",\n        \"tech_stack\": [\"example1\", \"example2\"],\n        \"role\":\"role example\",\n        \"links\": [\"https://www.example.com/1\",\"https://www.example.com/2\"],\n        \"impact\":\"impact example\"\n      }\n    ],\n    \"skills\": [\n       {\n         \"name\": \"name example\",\n         \"category\": \"category example\",\n         \"level\": \"intermediate\",\n         \"verified\": true,\n         \"verification_source\": \"https://www.example.com/example\"\n       }\n    ],\n    \"experience\": [\n      {\n        \"title\": \"title example\",\n        \"company\": \"copany example\",\n        \"lcoation\": \"location example\",\n        \"start_date\": \"start date example\",\n        \"end_date\": \"end date example\",\n        \"description\": \"description example\",\n        \"proof_link\": \"https://www.example.com/example\"\n      }\n    ],\n    \"education\": [\n      {\n         \"institution\": \"institution example\",\n         \"degree\": \"degree example\",\n         \"field_of_study\": \"field of study example\",\n         \"start year\": 2018,\n          \"end_year\": 2021,\n        \"description\": \"description example\"\n      }\n    ],\n  \"languages\": [\n    {\n      \"language\":\"language example\",\n      \"proficiency\":\"fluent\"\n    }\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -608,
+        160
+      ],
+      "id": "02c4498f-6a6c-4e73-8a7d-b87a88b540a7",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        720,
+        -16
+      ],
+      "id": "761c612e-9f79-4c5a-9d7a-f1efabc4e1d0",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output.certifications",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        -336
+      ],
+      "id": "f597bcd0-a1c4-4823-bf8d-10f0d15a0788",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output.projects",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        -176
+      ],
+      "id": "97ce69b4-a3ea-4b47-ae96-ab855da1c59f",
+      "name": "Split Out1"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output.skills",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        -16
+      ],
+      "id": "4b5a7a5a-6659-4c1c-8486-13dfa127b0e9",
+      "name": "Split Out2"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output.experience",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        144
+      ],
+      "id": "2fea9440-c801-44cd-a380-3274527b9aa4",
+      "name": "Split Out3"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output.education",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        304
+      ],
+      "id": "74ffacd3-b9b2-431d-a08a-3da3c7178bc9",
+      "name": "Split Out4"
+    },
+    {
+      "parameters": {
+        "numberInputs": 6
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        272,
+        -64
+      ],
+      "id": "021c8b38-3802-4d67-b193-4f01922ce488",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        496,
+        -16
+      ],
+      "id": "09f5903f-4223-40ea-bbc2-8ecc8accf1a2",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "tableId": "languages",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $('Webhook').item.json.body.user_id }}"
+            },
+            {
+              "fieldId": "language",
+              "fieldValue": "={{ $json.language }}"
+            },
+            {
+              "fieldId": "proficiency",
+              "fieldValue": "={{ $json.proficiency }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        480
+      ],
+      "id": "27c8fe6e-f270-43ed-85af-2fa3ba9817f4",
+      "name": "Education1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "zsk4Lsu1xj8gdQKh",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output.languages",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        480
+      ],
+      "id": "00efde9a-9211-4d9d-984a-c8655ce5ac83",
+      "name": "Split Out5"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Read PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read PDF": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Split Out2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Split Out3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Split Out4",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Split Out5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Certifications": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Projects": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Skills": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Experience": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Education": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Certifications",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "Projects",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out2": {
+      "main": [
+        [
+          {
+            "node": "Skills",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out3": {
+      "main": [
+        [
+          {
+            "node": "Experience",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out4": {
+      "main": [
+        [
+          {
+            "node": "Education",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out5": {
+      "main": [
+        [
+          {
+            "node": "Education1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Education1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6acd441e-18aa-46b0-9daf-8efe9e42bdc6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b2ffcdbeb1787fd778faf5466eed975d1bd1db574504dc36640ba126d4d12bae"
+  },
+  "id": "yW5UxTQVEDKJL0Rt",
+  "tags": []
+}

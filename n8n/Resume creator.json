@@ -1,0 +1,1404 @@
+{
+  "name": "Resume creator",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "autopiahire/create-resume",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        608,
+        608
+      ],
+      "id": "b6a91e5f-5fb7-474b-ab90-28eb815f3fb9",
+      "name": "Webhook",
+      "webhookId": "085a9f31-e230-4220-8b22-96ba80c02e24",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Whiid7VC5CPCK8Yf",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "Certifications",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        208
+      ],
+      "id": "f932803b-c2d9-499b-bbc2-453a77efa96c",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "certifications",
+        "returnAll": true,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Webhook').item.json.body.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        960,
+        208
+      ],
+      "id": "d6bf861b-d038-43f4-ac7a-d236676d2121",
+      "name": "Certifications",
+      "credentials": {
+        "supabaseApi": {
+          "id": "zsk4Lsu1xj8gdQKh",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "Projects",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        368
+      ],
+      "id": "71936547-bfac-4694-98dc-5039c003f8ec",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "Languages",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        528
+      ],
+      "id": "ea1afaa3-fe04-49a5-b4e6-b7514bedf6d8",
+      "name": "Aggregate2"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "Skills",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        704
+      ],
+      "id": "19091031-6aea-41ff-8945-ca6c9319c037",
+      "name": "Aggregate3"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "Experience",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        880
+      ],
+      "id": "d4f0303e-05c7-4e15-9682-cb7874856701",
+      "name": "Aggregate4"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "Education",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        1056
+      ],
+      "id": "b56b9960-641c-4409-9945-3308c059a797",
+      "name": "Aggregate5"
+    },
+    {
+      "parameters": {
+        "numberInputs": 7
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1632,
+        512
+      ],
+      "id": "79bad053-2e2f-4f97-a5a7-161920f9b5f8",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are an AI Resume Formatter.  \nYour job is to take structured or unstructured user data (such as name, contact, education, experience, projects, and skills) and return a LaTeX document using the exact template below.  \nYou must: \n\n- Follow the structure, sections, and formatting of the provided LaTeX template exactly. \n- Never invent, assume, or fill in missing data \n— only include information explicitly given by the user. \n- If the user omits a section (e.g., “Projects”), remove that section entirely instead of leaving placeholders. \n- Keep all LaTeX commands, section titles, and styling consistent with the template. \n- Replace “YOUR NAME HERE”, “your.email@example.com”, etc., only when data is provided. \n- Output only raw LaTeX code, no explanations or markdown formatting.  \n\nHere is the LaTeX template you must use:  %=========================== % Simple Professional CV Template %===========================  \\documentclass[a4paper,10pt]{article}  %-------------------------------------------- % Packages %-------------------------------------------- \\usepackage[margin=1in]{geometry} \\usepackage{titlesec} \\usepackage{enumitem} \\usepackage{hyperref} \\usepackage{parskip} \\usepackage{xcolor}  %-------------------------------------------- % Custom styling %-------------------------------------------- \\definecolor{mainblue}{HTML}{003366}  \\titleformat{\\section}{   \\color{mainblue}\\normalfont\\Large\\bfseries }{}{0em}{}[\\titlerule]  \\setlist[itemize]{leftmargin=*}  \\pagenumbering{gobble} % no page numbers  %-------------------------------------------- % Document %-------------------------------------------- \\begin{document}  \\begin{center}     {\\huge \\textbf{YOUR NAME HERE}} \\\\ [4pt]     \\small \\href{mailto:your.email@example.com}{your.email@example.com} |     +216 00 000 000 |     \\href{https://your-portfolio.com}{your-portfolio.com} |     \\href{https://linkedin.com/in/yourprofile}{LinkedIn} \\\\ \\end{center}  %-------------------------------------------- \\section*{Profile Summary} A short 3–4 line professional summary about yourself. Mention your main field, years of experience, and what kind of roles or projects you excel in.  %-------------------------------------------- \\section*{Education} \\textbf{Your Degree} \\hfill Graduation Year \\\\ \\textit{University Name}, City, Country \\\\ - Key courses: Course 1, Course 2, Course 3   - GPA: X.XX / 4.00 (optional)  %-------------------------------------------- \\section*{Experience} \\textbf{Job Title} — Company Name \\hfill Start – End \\\\ \\textit{City, Country}   \\begin{itemize}     \\item Describe your achievements in bullet points (start with action verbs: “Built”, “Led”, “Designed”).     \\item Focus on results and impact (e.g., “Increased system reliability by 20% by optimizing APIs”).     \\item Add 2–5 bullets per job. \\end{itemize}  \\textbf{Intern / Part-time / Freelance Position} — Company \\hfill Start – End \\\\ \\begin{itemize}     \\item Another short experience section if relevant. \\end{itemize}  %-------------------------------------------- \\section*{Projects} \\textbf{Project Name} — Tech Stack (React, Django, etc.) \\hfill Year \\\\ \\begin{itemize}     \\item Explain what the project does and your role in 1–2 lines.     \\item Mention results, technologies, or links. \\end{itemize}  %-------------------------------------------- \\section*{Skills} \\begin{itemize}[label={•}]     \\item \\textbf{Programming:} Python, JavaScript, C++, etc.     \\item \\textbf{Frameworks:} Django, React, Node.js     \\item \\textbf{Tools:} Git, Docker, Linux, AWS     \\item \\textbf{Languages:} English (Fluent), French (Intermediate) \\end{itemize}  %-------------------------------------------- \\section*{Certifications} \\begin{itemize}     \\item Certification Name — Issuer (Year) \\end{itemize}  %-------------------------------------------- \\section*{Interests} \\begin{itemize}     \\item Reading, Hackathons, AI Agents, Game Design, etc. \\end{itemize}  \\end{document}\n"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        2000,
+        592
+      ],
+      "id": "5dcbe958-2d77-47a4-84a2-0b7e51d5e3d9",
+      "name": "Basic LLM Chain",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2000,
+        784
+      ],
+      "id": "6e8660b3-d8d6-4e53-84ae-e9fd5133ddfc",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "M9WlIEfpWrKhAxt3",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "projects",
+        "returnAll": true,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Webhook').item.json.body.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        960,
+        368
+      ],
+      "id": "aa3cae2d-4d04-410b-a0f0-389d0822ab96",
+      "name": "Projects",
+      "credentials": {
+        "supabaseApi": {
+          "id": "zsk4Lsu1xj8gdQKh",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "languages",
+        "returnAll": true,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Webhook').item.json.body.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        960,
+        528
+      ],
+      "id": "203e5c88-dd59-4d63-89ed-60079da25d05",
+      "name": "Languages",
+      "credentials": {
+        "supabaseApi": {
+          "id": "zsk4Lsu1xj8gdQKh",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "skills",
+        "returnAll": true,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Webhook').item.json.body.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        960,
+        704
+      ],
+      "id": "f75477b7-e918-449e-bc23-083c6bed5caa",
+      "name": "Skills",
+      "credentials": {
+        "supabaseApi": {
+          "id": "zsk4Lsu1xj8gdQKh",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "experiences",
+        "returnAll": true,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Webhook').item.json.body.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        960,
+        880
+      ],
+      "id": "695c9b7c-ac0a-4c40-82e9-eac983f276d3",
+      "name": "Experience",
+      "credentials": {
+        "supabaseApi": {
+          "id": "zsk4Lsu1xj8gdQKh",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "education",
+        "returnAll": true,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Webhook').item.json.body.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        960,
+        1056
+      ],
+      "id": "c7593b67-55ce-429a-9757-8ed2ff1b629e",
+      "name": "Education",
+      "credentials": {
+        "supabaseApi": {
+          "id": "zsk4Lsu1xj8gdQKh",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "profiles",
+        "returnAll": true,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Webhook').item.json.body.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        64
+      ],
+      "id": "c6c938b4-4682-4068-bcf0-40facc205606",
+      "name": "Profile",
+      "credentials": {
+        "supabaseApi": {
+          "id": "zsk4Lsu1xj8gdQKh",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1808,
+        592
+      ],
+      "id": "69bec36e-1b7b-4305-b6b5-3d86526c8b22",
+      "name": "Aggregate6"
+    },
+    {
+      "parameters": {
+        "command": "=# Create temp directory\nTEMP_DIR=$(mktemp -d)\n\n# Save LaTeX file\necho '{{ $('Basic LLM Chain').item.json.output.LaTex }}' > \"$TEMP_DIR/resume.tex\"\n\n# Compile to PDF (non-interactive)\ncd \"$TEMP_DIR\"\npdflatex -interaction=nonstopmode resume.tex\n\n# Output the PDF path\necho \"$TEMP_DIR/resume.pdf\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        2512,
+        528
+      ],
+      "id": "63a07f2f-48fd-4437-a050-22376bb32c06",
+      "name": "Execute Command",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"LaTex\": \"LaTex Resume here\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        2144,
+        784
+      ],
+      "id": "429c4e7a-e9f2-4bac-b0f3-fc674ec00bf5",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "command": "=curl -X PUT '{{$('Keys').item.json.Endpoint}}/resumes/{{ $json.file_name }}' \\\n  --aws-sigv4 \"aws:amz:{{$('Keys').item.json.Region}}:s3\" \\\n  --user \"{{$('Keys').item.json.ACCESS_KEY}}:{{$('Keys').item.json.SECRET_KEY}}\" \\\n  -H 'Content-Type: application/pdf' \\\n  --data-binary @{{ $('Code in JavaScript').item.json.pdfPath }}"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        2512,
+        832
+      ],
+      "id": "e67f786a-86ee-492f-a36b-b9adb66588db",
+      "name": "Execute Command1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the LaTeX command output (adjust the field name if needed)\nconst latexOutput = $input.first().json.stdout || '';\n\n// Regex to find PDF path\nconst pdfPathMatch = latexOutput.match(/\\/[^\\s]+\\.pdf\\b/);\n\n// Loop over all items and add the PDF path\nfor (const item of $input.all()) {\n    item.json.pdfPath = pdfPathMatch ? pdfPathMatch[0] : null;\n}\n\n// Return all items\nreturn $input.all();\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2704,
+        512
+      ],
+      "id": "51c144a3-f153-4022-9e92-90f65e98dd81",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200,
+          "responseKey": "={ \"resume_url\": {{ $json.resume }}}"
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2896,
+        832
+      ],
+      "id": "99c49f71-135b-445d-b55c-f2fa96872484",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "profiles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Profile').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "resume",
+              "fieldValue": "=https://ueoqvwoxgnivpixdsnde.supabase.co/storage/v1/object/public/resumes/{{ $('Edit Fields').item.json.file_name }}"
+            },
+            {
+              "fieldId": "resume_latex",
+              "fieldValue": "={{ $('Basic LLM Chain').item.json.output.LaTex }}"
+            },
+            {
+              "fieldId": "is_resume_latex",
+              "fieldValue": "true"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2704,
+        832
+      ],
+      "id": "749cedf3-2cf9-4c2f-b7c9-3e6954705286",
+      "name": "Update a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "zsk4Lsu1xj8gdQKh",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "978bc829-1e4f-4e73-a081-f5b5a8d74f1c",
+              "name": "file_name",
+              "value": "={{ $('Profile').item.json.id }}_{{ new Date().toISOString() }}.pdf",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3072,
+        512
+      ],
+      "id": "92cd41c7-0214-4109-bf65-1d7ba333dd6f",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "pghDECxe7vN6rXzj",
+          "mode": "list",
+          "cachedResultName": "Delete old resume"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_id": "={{ $('Profile').item.json.id }}"
+          },
+          "matchingColumns": [
+            "user_id"
+          ],
+          "schema": [
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2880,
+        512
+      ],
+      "id": "8104c478-25d6-47c7-8ba9-838ec9b6e730",
+      "name": "Call 'Delete old resume'"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a97fb294-b501-4022-ba01-df88de36e298",
+              "name": "ACCESS_KEY",
+              "value": "5bc7f4f736a4753b54d00585ca899513",
+              "type": "string"
+            },
+            {
+              "id": "06401d0c-8bed-40ce-9c0c-97ee2d8cb1c5",
+              "name": "SECRET_KEY",
+              "value": "89d7d0601c860c069705020eeb0b1455678fdbb976af3d1d5798e1efba693f85",
+              "type": "string"
+            },
+            {
+              "id": "a8fcac8d-71f3-4af5-ba1a-115353265bd2",
+              "name": "Endpoint",
+              "value": "https://ueoqvwoxgnivpixdsnde.storage.supabase.co/storage/v1/s3",
+              "type": "string"
+            },
+            {
+              "id": "b01d9be5-8d37-4367-9561-ceeefe049272",
+              "name": "Region",
+              "value": "eu-west-3",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2320,
+        528
+      ],
+      "id": "1ec8591c-e809-445b-84e0-dca740162b19",
+      "name": "Keys"
+    },
+    {
+      "parameters": {
+        "command": "rm -rf \"$TEMP_DIR\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        3088,
+        832
+      ],
+      "id": "3f8b9385-aaab-4d1c-90b0-6eddcb3792ce",
+      "name": "Execute Command2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c319a668-b327-4c52-b903-fd5d0f72e2b0",
+              "name": "full_name",
+              "value": "={{ $json.full_name }}",
+              "type": "string"
+            },
+            {
+              "id": "e2cb5662-6000-4cfe-9b0c-1c440bc9dffa",
+              "name": "headline",
+              "value": "={{ $json.headline }}",
+              "type": "string"
+            },
+            {
+              "id": "39cea82d-88e6-4db4-91f8-011958a5e826",
+              "name": "email",
+              "value": "={{ $json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "b64553a8-6b6b-4a56-bf97-ee1a6420c7cf",
+              "name": "phone",
+              "value": "={{ $json.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "4789ee5c-d0b8-4166-83a0-b8a00114ad80",
+              "name": "location",
+              "value": "={{ $json.location }}",
+              "type": "string"
+            },
+            {
+              "id": "34881916-471e-44f6-a01a-a49b045f0f84",
+              "name": "bio",
+              "value": "={{ $json.bio }}",
+              "type": "string"
+            },
+            {
+              "id": "a4ee8150-6d46-45ba-b6c2-0e20636f0e44",
+              "name": "profile_picture",
+              "value": "={{ $json.profile_picture }}",
+              "type": "string"
+            },
+            {
+              "id": "2a26fd10-d18e-4a6c-b9e3-91782ca0538f",
+              "name": "work_preference",
+              "value": "={{ $json.work_preference }}",
+              "type": "string"
+            },
+            {
+              "id": "6c9f7f56-1f7d-4500-94f4-dea1d6d946c9",
+              "name": "",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1248,
+        64
+      ],
+      "id": "d000f668-51df-4edf-9ed1-9112e6929972",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6deefb86-f096-46d2-9b53-a4eb95886b75",
+              "name": "institution",
+              "value": "={{ $json.institution }}",
+              "type": "string"
+            },
+            {
+              "id": "cf54da59-8f1d-4961-b186-a5b944d5d554",
+              "name": "degree",
+              "value": "={{ $json.degree }}",
+              "type": "string"
+            },
+            {
+              "id": "7312f883-99e2-4e27-8489-d51527429534",
+              "name": "field_of_study",
+              "value": "={{ $json.field_of_study }}",
+              "type": "string"
+            },
+            {
+              "id": "acbebca3-2bf5-4c6d-8144-f0775424d0d1",
+              "name": "start_year",
+              "value": "={{ $json.start_year }}",
+              "type": "string"
+            },
+            {
+              "id": "737ffe03-ba56-4739-a413-ed34f00035c3",
+              "name": "end_year",
+              "value": "={{ $json.end_year }}",
+              "type": "string"
+            },
+            {
+              "id": "88b4ed48-9703-4f27-9383-1b067304d7cd",
+              "name": "description",
+              "value": "={{ $json.description }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1152,
+        1056
+      ],
+      "id": "502d4142-a47d-426c-bbc8-55e1597728f6",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "44dcaeee-c02b-4784-ae8d-c4937281d98c",
+              "name": "title",
+              "value": "={{ $json.title }}",
+              "type": "string"
+            },
+            {
+              "id": "dda1e12e-d68c-441a-b8cd-d2c586187c8e",
+              "name": "company",
+              "value": "={{ $json.company }}",
+              "type": "string"
+            },
+            {
+              "id": "75d1e4ec-98c9-4139-99a6-fc24d2ccf3e4",
+              "name": "location",
+              "value": "={{ $json.location }}",
+              "type": "string"
+            },
+            {
+              "id": "ddc4ac61-4dc2-42a0-bbba-b346bd2981f6",
+              "name": "start_date",
+              "value": "={{ $json.start_date }}",
+              "type": "string"
+            },
+            {
+              "id": "29f21a83-51e8-401b-87c4-30d9cdcc6e23",
+              "name": "end_date",
+              "value": "={{ $json.end_date }}",
+              "type": "string"
+            },
+            {
+              "id": "0a8d37dd-8398-417b-bc61-4ad2cf253013",
+              "name": "description",
+              "value": "={{ $json.description }}",
+              "type": "string"
+            },
+            {
+              "id": "716f16f9-b1ac-4a4c-b52a-8d028ba66142",
+              "name": "proof_link",
+              "value": "={{ $json.proof_link }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1152,
+        880
+      ],
+      "id": "7e9d5eb4-3820-4c33-a6d0-21de267d21c5",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8c6ae517-831e-43b9-b8ae-7f6155e4515f",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "4ea7643e-fbbc-4ebe-9bc9-9b58ad2edaaf",
+              "name": "category",
+              "value": "={{ $json.category }}",
+              "type": "string"
+            },
+            {
+              "id": "14358c3a-4dfd-466f-bb4e-8597db91c4ab",
+              "name": "level",
+              "value": "={{ $json.level }}",
+              "type": "string"
+            },
+            {
+              "id": "aee5e9d4-bbe9-43ba-af49-a42c18505557",
+              "name": "verified",
+              "value": "={{ $json.verified }}",
+              "type": "string"
+            },
+            {
+              "id": "0b36d57d-095c-4fe0-9c50-b334c3dd9559",
+              "name": "verification_source",
+              "value": "={{ $json.verification_source }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1152,
+        704
+      ],
+      "id": "1777e4ce-725b-4bbd-8329-f184be823e90",
+      "name": "Edit Fields4"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "77a258a4-4669-480c-bcf9-00b7cb3503b5",
+              "name": "language",
+              "value": "={{ $json.language }}",
+              "type": "string"
+            },
+            {
+              "id": "b64ba968-61a4-43a8-bb9b-0c0e216d01da",
+              "name": "proficiency",
+              "value": "={{ $json.proficiency }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1152,
+        528
+      ],
+      "id": "d61949a4-1f45-46c4-9624-f3dd815ba439",
+      "name": "Edit Fields5"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "43eff227-fb14-4121-9a77-eed0ee2240b9",
+              "name": "title",
+              "value": "={{ $json.title }}",
+              "type": "string"
+            },
+            {
+              "id": "14877f47-083c-490c-a164-8cd1b7859a5a",
+              "name": "description",
+              "value": "={{ $json.description }}",
+              "type": "string"
+            },
+            {
+              "id": "b1c55a46-ee37-493c-9b21-894eaf66286c",
+              "name": "tech_stack",
+              "value": "={{ $json.tech_stack }}",
+              "type": "array"
+            },
+            {
+              "id": "2d136e14-eb09-4f6b-bdd1-bfd202fb3e6e",
+              "name": "role",
+              "value": "={{ $json.role }}",
+              "type": "string"
+            },
+            {
+              "id": "5ac69ebc-809c-47bd-9542-251a0126b6a1",
+              "name": "links",
+              "value": "={{ $json.links }}",
+              "type": "string"
+            },
+            {
+              "id": "2f0b6248-038e-4d4e-97f2-255e2afd8b87",
+              "name": "impact",
+              "value": "={{ $json.impact }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1152,
+        368
+      ],
+      "id": "582f7d64-44fd-45be-9983-1df3a717f786",
+      "name": "Edit Fields6"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0a78af73-4080-488d-b9c8-23c665d5cf86",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "2f46758d-e31c-4395-a58c-d29058ee2552",
+              "name": "issuer",
+              "value": "={{ $json.issuer }}",
+              "type": "string"
+            },
+            {
+              "id": "a5bc9eea-992f-4457-818e-ddbe583ae14e",
+              "name": "year",
+              "value": "={{ $json.year }}",
+              "type": "string"
+            },
+            {
+              "id": "24d3c684-0c61-4a7a-97e4-5782fc9f474d",
+              "name": "credential_url",
+              "value": "={{ $json.credential_url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1152,
+        208
+      ],
+      "id": "fa6ee2d9-5102-46f2-a006-f62cc3267a11",
+      "name": "Edit Fields7"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Certifications",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Projects",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Languages",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Skills",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Experience",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Education",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Certifications": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Aggregate2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Aggregate3": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Aggregate4": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "Aggregate5": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 6
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Aggregate6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Projects": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Languages": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Skills": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Experience": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Education": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Profile": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate6": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Keys",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Call 'Delete old resume'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command1": {
+      "main": [
+        [
+          {
+            "node": "Update a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Execute Command1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Delete old resume'": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keys": {
+      "main": [
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        [
+          {
+            "node": "Execute Command2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Aggregate5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Aggregate4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields4": {
+      "main": [
+        [
+          {
+            "node": "Aggregate3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields5": {
+      "main": [
+        [
+          {
+            "node": "Aggregate2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields6": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields7": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "07126cf8-1464-4916-8b04-9d23c513afc5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b2ffcdbeb1787fd778faf5466eed975d1bd1db574504dc36640ba126d4d12bae"
+  },
+  "id": "OgRZGDB6uWr6JsO0",
+  "tags": []
+}
