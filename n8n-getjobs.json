@@ -1,0 +1,425 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "load",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "prompt": "={{ $('Webhook').item.json.query.query }}",
+        "topK": 1000,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        272,
+        192
+      ],
+      "id": "ebb238b5-25aa-4d75-a508-90c144dbf414",
+      "name": "Supabase Vector Store1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "zsk4Lsu1xj8gdQKh",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        272,
+        368
+      ],
+      "id": "487a0a73-c780-48c9-ba4f-a14cd11770eb",
+      "name": "Embeddings Ollama",
+      "credentials": {
+        "ollamaApi": {
+          "id": "VCXOaxYrXH4Jp1En",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "job_offers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.job_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        192
+      ],
+      "id": "45f471c6-04b7-4084-8f86-846412a94812",
+      "name": "Get a row1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "zsk4Lsu1xj8gdQKh",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "document.metadata.job_id"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        592,
+        192
+      ],
+      "id": "36294ea8-1712-4e1d-a3a7-dc410ec0a0e8",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "compare": "selectedFields",
+        "fieldsToCompare": "job_id",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        1008,
+        192
+      ],
+      "id": "962e3e66-1e6e-48d7-8884-ae935673ce66",
+      "name": "Remove Duplicates"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "job_id",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        800,
+        192
+      ],
+      "id": "1662d932-c964-443a-864d-a679bea634c4",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c1e0332b-5a65-43a0-8b3c-03205a7736f8",
+              "name": "page",
+              "value": "={{ $json.query.page }}",
+              "type": "number"
+            },
+            {
+              "id": "162be514-b86f-4e09-95fa-fa5b6975b6c5",
+              "name": "page_size",
+              "value": "={{ $json.query.page_size }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        64,
+        192
+      ],
+      "id": "3b7bf9e6-4458-47af-a011-ab323bae15a8",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\n// Skip first 4 items\nreturn items.slice( $('Edit Fields1').first().json.page*$('Edit Fields1').first().json.page_size );"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1232,
+        192
+      ],
+      "id": "3e146cd6-d383-45dc-af8b-bea772b8128f",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "maxItems": "={{ $('Edit Fields1').item.json.page_size }}"
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        192
+      ],
+      "id": "6551fb3d-4064-4212-b83f-69d42eb70c62",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "path": "/autopiahire/get-jobs",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -192,
+        192
+      ],
+      "id": "fb527fb6-7b1b-4ecd-b5e7-393a0ea741ae",
+      "name": "Webhook",
+      "webhookId": "aa0bb8dd-c09a-49d0-b004-8859edfea3a3",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "Whiid7VC5CPCK8Yf",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2160,
+        192
+      ],
+      "id": "98463df9-ea40-42fe-9281-fbafd7374817",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst webhook = $('Webhook').first().json.query;\n\n// If no items, return empty array\nif (!items || items.length === 0) {\n  return [];\n}\n\n// Apply all filters\nconst filtered = items.filter(item => {\n  const job = item.json;\n  \n  // Status filter (always active)\n  if (job.status !== 'active') return false;\n  \n  // Location filter\n  if (webhook.location && job.location !== webhook.location) return false;\n  \n  // Employment type filter\n  if (webhook.employment_type && job.employment_type !== webhook.employment_type) return false;\n  \n  // Experience level filter\n  if (webhook.experience_level && job.experience_level !== webhook.experience_level) return false;\n  \n  // Remote filter\n  if (webhook.is_remote !== undefined) {\n    const isRemote = webhook.is_remote === 'true' || webhook.is_remote === true;\n    if (job.is_remote !== isRemote) return false;\n  }\n  \n  // Hybrid filter\n  if (webhook.is_hybrid !== undefined) {\n    const isHybrid = webhook.is_hybrid === 'true' || webhook.is_hybrid === true;\n    if (job.is_hybrid !== isHybrid) return false;\n  }\n  \n  // Salary filters\n  if (webhook.salary_min && (!job.salary_min || job.salary_min < Number(webhook.salary_min))) return false;\n  if (webhook.salary_max && (!job.salary_max || job.salary_max > Number(webhook.salary_max))) return false;\n  \n  // Currency filter\n  if (webhook.salary_currency && job.salary_currency !== webhook.salary_currency) return false;\n  \n  // Company name filter\n  if (webhook.company_name && !job.company_name.toLowerCase().includes(webhook.company_name.toLowerCase())) return false;\n  \n  // Skills filter\n  if (webhook.required_skills) {\n    const requiredSkills = webhook.required_skills.split(',').map(s => s.trim().toLowerCase());\n    const jobSkills = (job.required_skills || []).map(s => s.toLowerCase());\n    const hasAllSkills = requiredSkills.every(skill => \n      jobSkills.some(jobSkill => jobSkill.includes(skill))\n    );\n    if (!hasAllSkills) return false;\n  }\n  \n  // Preferred skills filter\n  if (webhook.preferred_skills) {\n    const preferredSkills = webhook.preferred_skills.split(',').map(s => s.trim().toLowerCase());\n    const jobSkills = (job.preferred_skills || []).map(s => s.toLowerCase());\n    const hasSomeSkills = preferredSkills.some(skill => \n      jobSkills.some(jobSkill => jobSkill.includes(skill))\n    );\n    if (!hasSomeSkills) return false;\n  }\n  \n  // Job category filter\n  if (webhook.job_category && job.job_category !== webhook.job_category) return false;\n  \n  // Industry filter\n  if (webhook.industry && job.industry !== webhook.industry) return false;\n  \n  // Company size filter\n  if (webhook.company_size && job.company_size !== webhook.company_size) return false;\n  \n  // Education filter\n  if (webhook.education_required && job.education_required !== webhook.education_required) return false;\n  \n  // Visa sponsorship filter\n  if (webhook.visa_sponsorship !== undefined) {\n    const needsVisa = webhook.visa_sponsorship === 'true' || webhook.visa_sponsorship === true;\n    if (job.visa_sponsorship !== needsVisa) return false;\n  }\n  \n  // Benefits filter\n  if (webhook.benefits) {\n    const requiredBenefits = webhook.benefits.split(',').map(b => b.trim());\n    const jobBenefits = job.benefits || [];\n    const hasAllBenefits = requiredBenefits.every(benefit => \n      jobBenefits.includes(benefit)\n    );\n    if (!hasAllBenefits) return false;\n  }\n  \n  // Languages filter\n  if (webhook.languages) {\n    const requiredLanguages = webhook.languages.split(',').map(l => l.trim());\n    const jobLanguages = job.languages || [];\n    const hasAllLanguages = requiredLanguages.every(lang => \n      jobLanguages.includes(lang)\n    );\n    if (!hasAllLanguages) return false;\n  }\n  \n  // Posted date filter\n  if (webhook.posted_days_ago && job.created_at) {\n    const daysAgo = (Date.now() - new Date(job.created_at).getTime()) / (1000 * 60 * 60 * 24);\n    if (daysAgo > Number(webhook.posted_days_ago)) return false;\n  }\n  \n  return true;\n});\n\nreturn filtered.length > 0 ? filtered : [];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1872,
+        192
+      ],
+      "id": "d1cd7fea-fee9-402c-9bb5-dc4aecb662aa",
+      "name": "Filter and Apply Filters"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst webhook = $('Webhook').first().json.query;\n\n// If no items, return empty array\nif (!items || items.length === 0) {\n  return [];\n}\n\n// Apply sorting if specified\nif (webhook.sort_by) {\n  const sortOrder = webhook.sort_order === 'desc' ? -1 : 1;\n  \n  items.sort((a, b) => {\n    const jobA = a.json;\n    const jobB = b.json;\n    \n    let comparison = 0;\n    \n    switch (webhook.sort_by) {\n      case 'date':\n        comparison = new Date(jobA.created_at) - new Date(jobB.created_at);\n        break;\n      case 'salary':\n        const salaryA = jobA.salary_max || jobA.salary_min || 0;\n        const salaryB = jobB.salary_max || jobB.salary_min || 0;\n        comparison = salaryA - salaryB;\n        break;\n      case 'company':\n        comparison = (jobA.company_name || '').localeCompare(jobB.company_name || '');\n        break;\n      case 'relevance':\n      default:\n        // Keep original order (relevance from vector search)\n        return 0;\n    }\n    \n    return comparison * sortOrder;\n  });\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2040,
+        192
+      ],
+      "id": "sorting-node-12345",
+      "name": "Sort Results"
+    }
+  ],
+  "connections": {
+    "Supabase Vector Store1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row1": {
+      "main": [
+        [
+          {
+            "node": "Filter and Apply Filters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter and Apply Filters": {
+      "main": [
+        [
+          {
+            "node": "Sort Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort Results": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Get a row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "pinData": {
+    "Webhook": [
+      {
+        "headers": {
+          "host": "n8n.benamara.tn",
+          "user-agent": "node",
+          "accept": "*/*",
+          "accept-encoding": "gzip, br",
+          "accept-language": "*",
+          "api_key": "9GkvTOH0HpakEYNYkMpEQYBnrOQjeJgbY6yupVl39DzuTv3Ovi",
+          "cdn-loop": "cloudflare; loops=1",
+          "cf-connecting-ip": "102.31.172.226",
+          "cf-ipcountry": "TN",
+          "cf-ray": "995ccf130eb19d86-AMS",
+          "cf-visitor": "{\"scheme\":\"https\"}",
+          "content-type": "application/json",
+          "sec-fetch-mode": "cors",
+          "x-forwarded-for": "172.71.103.170",
+          "x-forwarded-host": "n8n.benamara.tn",
+          "x-forwarded-port": "443",
+          "x-forwarded-proto": "https",
+          "x-forwarded-server": "a41013f421e8",
+          "x-real-ip": "172.71.103.170"
+        },
+        "params": {},
+        "query": {
+          "page": "0",
+          "page_size": "12",
+          "query": "anything"
+        },
+        "body": {},
+        "webhookUrl": "https://n8n.benamara.tn/webhook/autopiahire/get-jobs",
+        "executionMode": "production"
+      }
+    ]
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b2ffcdbeb1787fd778faf5466eed975d1bd1db574504dc36640ba126d4d12bae"
+  }
+}

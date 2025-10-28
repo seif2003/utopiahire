@@ -3,17 +3,11 @@
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/client'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import Link from 'next/link'
 import { useState } from 'react'
+import Image from 'next/image'
 
 export function ForgotPasswordForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
   const [email, setEmail] = useState('')
@@ -42,56 +36,72 @@ export function ForgotPasswordForm({ className, ...props }: React.ComponentProps
   }
 
   return (
-    <div className={cn('flex flex-col gap-6', className)} {...props}>
+    <div className={cn('flex flex-col gap-8', className)} {...props}>
+      {/* Logo */}
+      <div className="flex justify-center mb-4">
+        <Image src="/logo.png" alt="Utopia Hire" width={160} height={60} className="object-contain" />
+      </div>
+
       {success ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">Check Your Email</CardTitle>
-            <CardDescription>Password reset instructions sent</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              If you registered using your email and password, you will receive a password reset
-              email.
+        <div className="flex flex-col gap-6">
+          <div className="text-center">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Check Your Email</h2>
+            <p className="text-sm text-gray-600">
+              If you registered using your email and password, you will receive a password reset email.
             </p>
-          </CardContent>
-        </Card>
+          </div>
+          <Link href="/auth/login">
+            <Button className="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-6 rounded-md">
+              Back to Login
+            </Button>
+          </Link>
+        </div>
       ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl">Reset Your Password</CardTitle>
-            <CardDescription>
-              Type in your email and we&apos;ll send you a link to reset your password
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleForgotPassword}>
-              <div className="flex flex-col gap-6">
-                <div className="grid gap-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="m@example.com"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </div>
-                {error && <p className="text-sm text-red-500">{error}</p>}
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Sending...' : 'Send reset email'}
-                </Button>
-              </div>
-              <div className="mt-4 text-center text-sm">
-                Already have an account?{' '}
-                <Link href="/auth/login" className="underline underline-offset-4">
-                  Login
-                </Link>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+        <form onSubmit={handleForgotPassword}>
+          <div className="flex flex-col gap-5">
+            <div className="text-center mb-2">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-2">Reset Your Password</h2>
+              <p className="text-sm text-gray-600">
+                Type in your email and we'll send you a link to reset your password
+              </p>
+            </div>
+
+            {/* Email Address */}
+            <div className="grid gap-2">
+              <Label htmlFor="email" className="text-sm font-normal">
+                Email Address<span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Input"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="bg-white border-gray-300"
+              />
+            </div>
+
+            {error && <p className="text-sm text-red-500">{error}</p>}
+
+            {/* Send Reset Email Button */}
+            <Button 
+              type="submit" 
+              className="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-6 rounded-md mt-2" 
+              disabled={isLoading}
+            >
+              {isLoading ? 'Sending...' : 'Send reset email'}
+            </Button>
+
+            {/* Login Link */}
+            <div className="text-center text-sm mt-2">
+              Remember your password?{' '}
+              <Link href="/auth/login" className="text-red-500 hover:text-red-600 font-medium">
+                Login
+              </Link>
+            </div>
+          </div>
+        </form>
       )}
     </div>
   )
