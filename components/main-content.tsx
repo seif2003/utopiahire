@@ -140,10 +140,15 @@ export function MainContent() {
 
       const data = await response.json()
       setJobs(data)
-      toast.success(`Found ${data.length} matching jobs!`)
+      if (data.length === 0) {
+        toast.info('No jobs found matching your criteria. Try adjusting your filters.')
+      } else {
+        toast.success(`Found ${data.length} matching job${data.length === 1 ? '' : 's'}!`)
+      }
     } catch (error) {
       console.error('Error fetching jobs:', error)
       toast.error(error instanceof Error ? error.message : 'Failed to fetch jobs')
+      setJobs([])
     } finally {
       setIsLoadingJobs(false)
     }
@@ -592,6 +597,22 @@ export function MainContent() {
               {jobs.map((job) => (
                 <JobCard key={job.id} job={job} />
               ))}
+            </div>
+          ) : editedSummary.trim() ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <SlidersHorizontal className="w-16 h-16 text-muted-foreground mb-4" />
+              <h2 className="text-2xl font-semibold mb-2">No jobs found</h2>
+              <p className="text-muted-foreground mb-6 max-w-md">
+                We couldn't find any jobs matching your current filters and preferences. Try adjusting your search criteria or removing some filters.
+              </p>
+              <Button
+                variant="outline"
+                onClick={clearFilters}
+                className="mt-2"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Clear All Filters
+              </Button>
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-20 text-center">

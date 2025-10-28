@@ -127,7 +127,6 @@ export async function POST(request: NextRequest) {
 
     // Check if response has content
     const text = await response.text()
-    console.log('Response text:', text)
     
     if (!text || text.trim() === '') {
       console.error('Empty response from n8n')
@@ -142,7 +141,6 @@ export async function POST(request: NextRequest) {
       data = JSON.parse(text)
     } catch (parseError) {
       console.error('JSON parse error:', parseError)
-      console.error('Response text:', text)
       return NextResponse.json(
         { error: 'Invalid JSON response from n8n', details: text },
         { status: 500 }
