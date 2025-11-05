@@ -243,7 +243,7 @@ export function OrganizationManager({ userId }: OrganizationManagerProps) {
 
   return (
     <>
-      <div className="container mx-auto py-8 px-4">
+      <div className="container mx-auto pb-8 px-4 pt-26">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold">My Organizations</h1>

@@ -208,7 +208,7 @@ export function MainContent() {
   }
 
   return (
-    <div className="container mx-auto py-4 md:py-8 px-4">
+    <div className="container mx-auto pb-4 md:pb-8 px-4 pt-26">
       {/* Header */}
       <div className="mb-6 md:mb-8">
         <h1 className="text-2xl md:text-3xl font-bold mb-2">Welcome back to Utopia Hire!</h1>

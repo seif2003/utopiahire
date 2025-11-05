@@ -23,7 +23,8 @@ import {
   ArrowLeft,
   ExternalLink,
   Loader2,
-  Upload
+  Upload,
+  Brain
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -189,9 +190,9 @@ export function JobDetails({ jobId }: JobDetailsProps) {
 
     try {
       const formData = new FormData()
-      formData.append('resume', file)
+      formData.append('file', file)
 
-      const response = await fetch('/api/upload-resume', {
+      const response = await fetch('/api/upload-temp-resume', {
         method: 'POST',
         body: formData,
       })
@@ -345,9 +346,20 @@ export function JobDetails({ jobId }: JobDetailsProps) {
                 </div>
               </div>
             </div>
-            <Button size="lg" onClick={handleApply}>
-              Apply Now
-            </Button>
+            <div className="flex gap-3">
+              <Button size="lg" onClick={handleApply}>
+                Apply Now
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                onClick={() => router.push(`/main/interview?jobId=${jobId}&jobTitle=${encodeURIComponent(job.title)}`)}
+                className="flex items-center gap-2"
+              >
+                <Brain className="w-5 h-5" />
+                AI Interview
+              </Button>
+            </div>
           </div>
         </CardHeader>
       </Card>

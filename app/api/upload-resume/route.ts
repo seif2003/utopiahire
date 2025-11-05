@@ -71,7 +71,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const n8nResult = await n8nResponse.json()
+    // Try to parse JSON response, handle empty responses
+    let n8nResult
+    const responseText = await n8nResponse.text()
+    
+    if (responseText) {
+      try {
+        n8nResult = JSON.parse(responseText)
+      } catch (parseError) {
+        console.error('Failed to parse n8n response:', responseText)
+        // If JSON parsing fails but request succeeded, continue anyway
+        n8nResult = { success: true }
+      }
+    } else {
+      console.log('n8n returned empty response, assuming success')
+      n8nResult = { success: true }
+    }
 
     // Also upload the file to Supabase storage for backup
     try {
