@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loader2, ArrowLeft, Mail, FileText, Calendar, User, Briefcase, GraduationCap, Award } from 'lucide-react'
+import { Loader2, ArrowLeft, Mail, FileText, Calendar, User, Briefcase, GraduationCap, Award, Sparkles, TrendingUp, CheckCircle2, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import Image from 'next/image'
 
@@ -72,6 +72,8 @@ export function JobApplications({ jobId, userId }: JobApplicationsProps) {
   const [applications, setApplications] = useState<Application[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null)
+  const [candidateInsights, setCandidateInsights] = useState<Record<string, any>>({})
+  const [analyzingCandidate, setAnalyzingCandidate] = useState<string | null>(null)
 
   useEffect(() => {
     fetchJobAndApplications()
@@ -158,6 +160,40 @@ export function JobApplications({ jobId, userId }: JobApplicationsProps) {
     }
   }
 
+  const handleAnalyzeCandidate = async (applicationId: string) => {
+    setAnalyzingCandidate(applicationId)
+    try {
+      const response = await fetch(`/api/applications/${applicationId}/analyze`, {
+        method: 'POST',
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to analyze candidate')
+      }
+
+      const data = await response.json()
+      console.log('AI Analysis data for candidate:', data) // Debug log
+      
+      // Store insights for this candidate
+      setCandidateInsights(prev => ({
+        ...prev,
+        [applicationId]: data
+      }))
+      
+      toast.success('Candidate analysis complete!')
+    } catch (error) {
+      console.error('Error analyzing candidate:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to analyze candidate')
+    } finally {
+      setAnalyzingCandidate(null)
+    }
+  }
+
+  const getCandidateInsight = (applicationId: string) => {
+    return candidateInsights[applicationId] || null
+  }
+
   if (isLoading) {
     return (
       <div className="container mx-auto py-8 px-4">
@@ -200,6 +236,7 @@ export function JobApplications({ jobId, userId }: JobApplicationsProps) {
         </p>
       </div>
 
+      {/* AI Analysis Section */}
       {applications.length > 0 ? (
         <div className="grid grid-cols-1 gap-6">
           {applications.map((application) => (
@@ -222,11 +259,24 @@ export function JobApplications({ jobId, userId }: JobApplicationsProps) {
                       </div>
                     )}
                     <div className="flex-1">
-                      <CardTitle>{application.profiles.full_name}</CardTitle>
+                      <div className="flex items-center gap-2 mb-1">
+                        <CardTitle>{application.profiles.full_name}</CardTitle>
+                        {getCandidateInsight(application.id) && (
+                          <span className="px-2 py-0.5 bg-primary text-primary-foreground text-xs font-bold rounded-full flex items-center gap-1">
+                            <Sparkles className="h-3 w-3" />
+                            AI Insight
+                          </span>
+                        )}
+                      </div>
                       {application.profiles.headline && (
                         <p className="text-sm text-muted-foreground mt-1">
                           {application.profiles.headline}
                         </p>
+                      )}
+                      {getCandidateInsight(application.id) && (
+                        <div className="mt-2 p-2 bg-primary/5 rounded text-xs">
+                          <p className="font-medium mb-1">{getCandidateInsight(application.id).quickSummary}</p>
+                        </div>
                       )}
                       <CardDescription className="flex flex-col gap-1 mt-2">
                         <span className="flex items-center gap-1">
@@ -243,18 +293,39 @@ export function JobApplications({ jobId, userId }: JobApplicationsProps) {
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-2">
-                    <select
-                      value={application.status}
-                      onChange={(e) => handleStatusChange(application.id, e.target.value)}
-                      disabled={updatingStatus === application.id}
-                      className={`px-3 py-1 text-xs rounded-full capitalize border-0 font-medium cursor-pointer ${getStatusColor(application.status)}`}
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="reviewing">Reviewing</option>
-                      <option value="interview">Interview</option>
-                      <option value="accepted">Accepted</option>
-                      <option value="rejected">Rejected</option>
-                    </select>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        onClick={() => handleAnalyzeCandidate(application.id)}
+                        disabled={analyzingCandidate === application.id}
+                        size="sm"
+                        variant="outline"
+                        className="text-xs"
+                      >
+                        {analyzingCandidate === application.id ? (
+                          <>
+                            <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                            Analyzing...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="h-3 w-3 mr-1" />
+                            Analyze
+                          </>
+                        )}
+                      </Button>
+                      <select
+                        value={application.status}
+                        onChange={(e) => handleStatusChange(application.id, e.target.value)}
+                        disabled={updatingStatus === application.id}
+                        className={`px-3 py-1 text-xs rounded-full capitalize border-0 font-medium cursor-pointer ${getStatusColor(application.status)}`}
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="reviewing">Reviewing</option>
+                        <option value="interview">Interview</option>
+                        <option value="accepted">Accepted</option>
+                        <option value="rejected">Rejected</option>
+                      </select>
+                    </div>
                     <span className="text-xs text-muted-foreground flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       {new Date(application.applied_at).toLocaleDateString()}
@@ -263,6 +334,45 @@ export function JobApplications({ jobId, userId }: JobApplicationsProps) {
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
+                {/* AI Detailed Insights */}
+                {getCandidateInsight(application.id) && (
+                  <div className="p-3 bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg border border-primary/20">
+                    <h4 className="font-semibold mb-2 flex items-center gap-2 text-sm">
+                      <Sparkles className="w-4 h-4 text-primary" />
+                      AI Insights
+                    </h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground">💼 Experience</p>
+                          <p className="text-xs">{getCandidateInsight(application.id).experienceMatch}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground">🎯 Skills</p>
+                          <p className="text-xs">{getCandidateInsight(application.id).skillsMatch}</p>
+                        </div>
+                      </div>
+                      <div className="pt-2 border-t">
+                        <p className="text-xs"><span className="font-medium">✨ Top Strength:</span> {getCandidateInsight(application.id).topStrength}</p>
+                        <p className="text-xs mt-1"><span className="font-medium">⚠️ Consider:</span> {getCandidateInsight(application.id).potentialConcern}</p>
+                      </div>
+                      {getCandidateInsight(application.id).interviewQuestions && (
+                        <div className="pt-2 border-t">
+                          <p className="text-xs font-medium mb-1">💬 Interview Questions:</p>
+                          <ul className="text-xs space-y-1 list-disc list-inside">
+                            {getCandidateInsight(application.id).interviewQuestions.map((q: string, i: number) => (
+                              <li key={i}>{q}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      <div className="pt-2 border-t">
+                        <p className="text-xs"><span className="font-medium">📋 Recommendation:</span> {getCandidateInsight(application.id).recommendation}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Bio */}
                 {application.profiles.bio && (
                   <div>

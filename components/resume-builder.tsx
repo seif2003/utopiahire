@@ -85,9 +85,9 @@ export function ResumeBuilder({ userId, userEmail, existingData }: ResumeBuilder
         return
       }
 
-      // Success - redirect to my-resume page
+      // Success - redirect to my-profile page
       toast.success('Resume generated successfully!')
-      router.push('/main/my-resume')
+      router.push('/main/my-profile')
       router.refresh()
     } catch (error) {
       console.error('Error completing onboarding:', error)

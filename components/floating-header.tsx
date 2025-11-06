@@ -46,8 +46,8 @@ export function FloatingHeader({ userEmail, profilePicture }: FloatingHeaderProp
 			href: '/main/my-jobs',
 		},
 		{
-			label: 'My Resume',
-			href: '/main/my-resume',
+			label: 'My Profile',
+			href: '/main/my-profile',
 		},
 		{
 			label: 'Edit Profile',
