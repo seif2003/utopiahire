@@ -7,6 +7,7 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface FloatingHeaderProps {
 	userEmail?: string | null;
@@ -78,12 +79,12 @@ export function FloatingHeader({ userEmail, profilePicture }: FloatingHeaderProp
 			)}
 		>
 			<nav className="mx-auto flex items-center justify-between p-1.5">
-				<a href="/" >
+				<Link href="/">
 				<div className="hover:bg-accent flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 duration-100">
-					<img src="/logo1.png" alt="Utopia Hire Logo" className="h-8 w-8"/>
+					<Image src="/logo1.png" alt="Utopia Hire Logo" width={32} height={32} className="h-8 w-8"/>
 					<p className="font-mono text-base font-bold text-primary">Utopia Hire</p>
 				</div>
-				</a>
+				</Link>
 				<div className="hidden items-center gap-1 lg:flex">
 					{links.map((link) => (
 						<a
@@ -151,6 +152,7 @@ export function FloatingHeader({ userEmail, profilePicture }: FloatingHeaderProp
 							<div className="grid gap-y-2 overflow-y-auto px-4 pt-12 pb-5">
 								{links.map((link) => (
 									<a
+										key={link.href}
 										className={buttonVariants({
 											variant: 'ghost',
 											className: 'justify-start',

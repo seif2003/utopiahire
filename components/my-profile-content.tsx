@@ -26,19 +26,30 @@ import {
 import { ResumeViewer } from './resume-viewer'
 import { toast } from 'sonner'
 import ReactMarkdown from 'react-markdown'
+import type { 
+  Profile, 
+  Experience, 
+  Education, 
+  Skill, 
+  Project, 
+  Certification, 
+  Language, 
+  ValuesAndPreferences, 
+  JobApplication 
+} from '@/types/profile'
 
 interface MyProfileContentProps {
   userId: string
   userEmail: string
-  profile: any
-  experiences: any[]
-  education: any[]
-  skills: any[]
-  projects: any[]
-  certifications: any[]
-  languages: any[]
-  preferences: any
-  applications: any[]
+  profile: Profile
+  experiences: Experience[]
+  education: Education[]
+  skills: Skill[]
+  projects: Project[]
+  certifications: Certification[]
+  languages: Language[]
+  preferences: ValuesAndPreferences
+  applications: JobApplication[]
   resumeUrl: string | null
   resumeLatex: string | null
   isResumeLatex: boolean
@@ -159,7 +170,7 @@ export function MyProfileContent({
                   Get AI-Powered Profile Analysis
                 </p>
                 <p className="text-gray-500 text-sm">
-                  Click "Get Insights" to receive personalized feedback on your profile
+                  Click &quot;Get Insights&quot; to receive personalized feedback on your profile
                 </p>
               </div>
             )}

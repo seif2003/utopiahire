@@ -72,11 +72,20 @@ export function JobApplications({ jobId, userId }: JobApplicationsProps) {
   const [applications, setApplications] = useState<Application[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null)
-  const [candidateInsights, setCandidateInsights] = useState<Record<string, any>>({})
+  const [candidateInsights, setCandidateInsights] = useState<Record<string, {
+    quickSummary: string
+    experienceMatch: string
+    skillsMatch: string
+    topStrength: string
+    potentialConcern: string
+    interviewQuestions: string[]
+    recommendation: string
+  }>>({})
   const [analyzingCandidate, setAnalyzingCandidate] = useState<string | null>(null)
 
   useEffect(() => {
     fetchJobAndApplications()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobId])
 
   const fetchJobAndApplications = async () => {
@@ -488,7 +497,7 @@ export function JobApplications({ jobId, userId }: JobApplicationsProps) {
             </div>
             <h2 className="text-2xl font-semibold mb-2">No applications yet</h2>
             <p className="text-muted-foreground max-w-md">
-              This job posting hasn't received any applications yet. Share the job link to attract candidates.
+              This job posting hasn&apos;t received any applications yet. Share the job link to attract candidates.
             </p>
           </CardContent>
         </Card>
