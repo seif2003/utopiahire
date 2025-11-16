@@ -164,7 +164,7 @@
       ],
       "id": "5b42533e-14bc-4c52-8be1-73b2dbf7e397",
       "name": "Basic LLM Chain",
-      "retryOnFail": true
+      "retryOnFail": false
     },
     {
       "parameters": {
@@ -917,7 +917,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "a59c1bc3-1c8c-4056-a8be-6279451466a5",
+  "versionId": "bae1cdf6-7808-47bf-8663-1161b2a1d150",
   "meta": {
     "instanceId": "b2ffcdbeb1787fd778faf5466eed975d1bd1db574504dc36640ba126d4d12bae"
   },

@@ -572,7 +572,8 @@
         512
       ],
       "id": "8104c478-25d6-47c7-8ba9-838ec9b6e730",
-      "name": "Call 'Delete old resume'"
+      "name": "Call 'Delete old resume'",
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
@@ -1394,7 +1395,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "07126cf8-1464-4916-8b04-9d23c513afc5",
+  "versionId": "fbc8ad57-186c-4c8a-9ac9-e4e183ef8907",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "b2ffcdbeb1787fd778faf5466eed975d1bd1db574504dc36640ba126d4d12bae"

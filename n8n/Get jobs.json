@@ -211,7 +211,7 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4,
       "position": [
-        2016,
+        2112,
         48
       ],
       "id": "393c14d2-1342-41b1-8931-0e9076a30041",
@@ -254,7 +254,7 @@
             "accept": "*/*",
             "accept-encoding": "gzip, br",
             "accept-language": "*",
-            "api_key": "9GkvTOH0HpakEYNYkMpEQYBnrOQjeJgbY6yupVl39DzuTv3Ovi",
+            "api_key": "",
             "cdn-loop": "cloudflare; loops=1",
             "cf-connecting-ip": "102.31.172.226",
             "cf-ipcountry": "TN",
@@ -420,7 +420,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "8d1d1867-52a9-4210-9c19-1696e7d900c4",
+  "versionId": "e44ff726-c0e3-4744-99fd-35612b10b906",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "b2ffcdbeb1787fd778faf5466eed975d1bd1db574504dc36640ba126d4d12bae"
